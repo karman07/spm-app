@@ -1,13 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ToastAndroid,
+  Platform,
+} from "react-native";
 import { StackScreenProps } from "@react-navigation/stack";
 import { MulRootStackParamList } from "@/types/types";
 import { BASE_COLOR } from "@/colors/Colors";
 
 type Props = StackScreenProps<MulRootStackParamList, "Multiplication">;
 
-const MultiplicationScreen: React.FC<Props> = ({ navigation, route }) => {
+const MultiplicationScreen: React.FC<Props> = ({ route }) => {
   const { questions, time, multiplier, multiplied } = route.params;
+
   const [currentQuestion, setCurrentQuestion] = useState(1);
   const [num1, setNum1] = useState(0);
   const [num2, setNum2] = useState(0);
@@ -23,8 +32,8 @@ const MultiplicationScreen: React.FC<Props> = ({ navigation, route }) => {
     const interval = setInterval(() => {
       setTimer((prev) => {
         if (prev <= 1) {
-          setQuizOver(true);
           clearInterval(interval);
+          endQuiz("Time's up!");
           return 0;
         }
         return prev - 1;
@@ -41,6 +50,19 @@ const MultiplicationScreen: React.FC<Props> = ({ navigation, route }) => {
     setShowAnswer(false);
   };
 
+  const showToast = (message: string) => {
+    if (Platform.OS === "android") {
+      ToastAndroid.show(message, ToastAndroid.SHORT);
+    } else {
+      console.log(message); // fallback for iOS
+    }
+  };
+
+  const endQuiz = (message: string) => {
+    setQuizOver(true);
+    showToast(message);
+  };
+
   const checkAnswer = () => {
     if (parseInt(answer) === num1 * num2) {
       setCorrect(correct + 1);
@@ -54,11 +76,9 @@ const MultiplicationScreen: React.FC<Props> = ({ navigation, route }) => {
         setCurrentQuestion(currentQuestion + 1);
         setAnswer("");
         generateQuestion();
-      }, 1000);
+      }, 800);
     } else {
-      setTimeout(() => {
-        setQuizOver(true);
-      }, 1000);
+      setTimeout(() => endQuiz("Questions are over!"), 800);
     }
   };
 
@@ -67,55 +87,48 @@ const MultiplicationScreen: React.FC<Props> = ({ navigation, route }) => {
     setCorrect(0);
     setWrong(0);
     setTimer(time);
+    setAnswer("");
     setQuizOver(false);
     generateQuestion();
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.timer}>⏳ {timer} sec</Text>
+      <Text style={styles.timer}>⏳ {timer}s</Text>
 
       <View style={styles.scoreContainer}>
-        <Text style={styles.correctAnswers}>✅ Correct: {correct}</Text>
-        <Text style={styles.wrongAnswers}>❌ Wrong: {wrong}</Text>
+        <Text style={styles.scoreText}>✅ {correct}</Text>
+        <Text style={styles.scoreText}>❌ {wrong}</Text>
       </View>
 
-      {quizOver ? (
-        <View style={styles.overlay}>
-          <Text style={styles.quizOverText}>🎯 Questions Over!</Text>
-          <Text style={styles.correctAnswers}>✅ Correct: {correct}</Text>
-          <Text style={styles.wrongAnswers}>❌ Wrong: {wrong}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={restartQuiz}>
-            <Text style={styles.retryButtonText}>Retry 🔄</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
+      {!quizOver && (
         <>
-          <Text style={styles.question}>{num1} × {num2}</Text>
+          <Text style={styles.questionText}>{num1} × {num2}</Text>
 
           {showAnswer && (
-            <Text style={styles.answerText}>Correct Answer: {num1 * num2}</Text>
+            <Text style={styles.answerText}>Answer: {num1 * num2}</Text>
           )}
 
           <TextInput
             style={styles.input}
             keyboardType="numeric"
-            placeholder="Enter Answer"
+            placeholder="Your answer"
             value={answer}
             onChangeText={setAnswer}
-            editable={!quizOver}
           />
 
-          <TouchableOpacity 
-            style={[styles.button, quizOver && styles.disabledButton]} 
-            onPress={checkAnswer} 
-            disabled={quizOver}
-          >
+          <TouchableOpacity style={styles.button} onPress={checkAnswer}>
             <Text style={styles.buttonText}>
               {currentQuestion < questions ? "Next ➡️" : "Finish 🎯"}
             </Text>
           </TouchableOpacity>
         </>
+      )}
+
+      {quizOver && (
+        <TouchableOpacity style={styles.retryButton} onPress={restartQuiz}>
+          <Text style={styles.retryButtonText}>Retry 🔄</Text>
+        </TouchableOpacity>
       )}
     </View>
   );
@@ -124,97 +137,72 @@ const MultiplicationScreen: React.FC<Props> = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: 24,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f4f4f4",
+    backgroundColor: "#f9f9f9",
   },
   timer: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#333",
-    marginBottom: 10,
+    marginBottom: 20,
+    color: "#222",
   },
   scoreContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    width: "90%",
+    width: "60%",
+    marginBottom: 30,
+  },
+  scoreText: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#444",
+  },
+  questionText: {
+    fontSize: 48,
+    fontWeight: "bold",
     marginBottom: 20,
-  },
-  correctAnswers: {
-    fontSize: 18,
-    color: "#28a745",
-    fontWeight: "bold",
-  },
-  wrongAnswers: {
-    fontSize: 18,
-    color: "#dc3545",
-    fontWeight: "bold",
-  },
-  question: {
-    fontSize: 50,
-    fontWeight: "bold",
-    color: "#222",
-    marginVertical: 20,
+    color: "#333",
   },
   answerText: {
-    fontSize: 22,
-    fontWeight: "bold",
+    fontSize: 20,
     color: "#007BFF",
     marginBottom: 10,
   },
   input: {
     width: "80%",
-    padding: 15,
-    borderWidth: 1.5,
-    borderColor: "#555",
+    padding: 14,
+    fontSize: 22,
+    borderWidth: 1,
+    borderColor: "#ccc",
     borderRadius: 10,
+    backgroundColor: "#fff",
     textAlign: "center",
-    fontSize: 24,
-    color: "#222",
-    backgroundColor: "#ffffff",
     marginBottom: 20,
   },
   button: {
     backgroundColor: BASE_COLOR,
-    paddingVertical: 15,
+    paddingVertical: 14,
     paddingHorizontal: 30,
     borderRadius: 10,
     marginBottom: 20,
   },
-  disabledButton: {
-    backgroundColor: "#ccc",
-  },
   buttonText: {
-    color: "#ffffff",
-    fontSize: 20,
+    color: "#fff",
+    fontSize: 18,
     fontWeight: "bold",
-  },
-  overlay: {
-    backgroundColor: "rgba(255,255,255,0.95)",
-    position: "absolute",
-    width: "100%",
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  quizOverText: {
-    fontSize: 30,
-    fontWeight: "bold",
-    color: "#FF4500",
-    marginBottom: 20,
   },
   retryButton: {
     backgroundColor: BASE_COLOR,
-    paddingVertical: 15,
+    paddingVertical: 14,
     paddingHorizontal: 30,
     borderRadius: 10,
-    marginTop: 20,
+    marginTop: 30,
   },
   retryButtonText: {
-    color: "#ffffff",
-    fontSize: 20,
+    color: "#fff",
+    fontSize: 18,
     fontWeight: "bold",
   },
 });
