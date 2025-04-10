@@ -4,38 +4,74 @@
     "slug": "abacus_app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/img/Sprouting_Minds_Abacus_(1).png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.karman.spa.ios",
+      "infoPlist": {
+        "NSUserTrackingUsageDescription": "This identifier will be used to show you personalized ads.",
+        "SKAdNetworkItems": [
+          {
+            "SKAdNetworkIdentifier": "cstr6suwn9.skadnetwork"
+          }
+        ]
+      }
     },
     "android": {
+      "package": "com.karman.spa",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/img/Sprouting_Minds_Abacus_(1).png",
         "backgroundColor": "#ffffff"
       }
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/img/Sprouting_Minds_Abacus_(1).png"
     },
     "plugins": [
       "expo-router",
+      "expo-dev-client",
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-3940256099942544/2247696110",
+          "iosAppId": "ca-app-pub-3940256099942544/3986624511",
+          "userTrackingUsageDescription": "This identifier will be used to show you personalized ads.",
+          "facebookMediation": false
+        }
+      ],
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/img/Sprouting_Minds_Abacus_(1).png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
         }
       ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "7e852fbf-1296-416e-846a-93f1c6f9326b"
+      }
     }
   }
 }

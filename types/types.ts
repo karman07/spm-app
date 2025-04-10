@@ -40,3 +40,14 @@ export type AddStackParamList = {
     Home: undefined;
     Multiplication: { questions: number; time: number; multiplier: number; multiplied: number };
   };
+
+  export type DivRootStackParamList = {
+    Home: undefined;
+    Division: {
+      questions: number;
+      time: number;
+      dividendDigits: number;
+      divisorDigits: number;
+    };
+  };
+  
