@@ -32,6 +32,7 @@ const DrawerNavigator = () => {
       <Drawer.Screen name="StopWatch" component={Stopwatch} />
       <Drawer.Screen name="Timer" component={CountdownTimer} />
       <Drawer.Screen name="Square" component={SquareRootNavigator} />
+      <Drawer.Screen name="Cube" component={SquareRootNavigator} />
     
     </Drawer.Navigator>
     <NativeAdComponent/>
