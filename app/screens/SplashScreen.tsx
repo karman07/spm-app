@@ -37,7 +37,7 @@ export default function SplashScreen({ navigation }: any) {
       try {
         const signupStatus = await AsyncStorage.getItem("signup");
         const routeName = signupStatus === "true" ? "Drawer" : "Auth";
-
+        console.log("Is Dev Mode:", __DEV__);
         setTimeout(() => {
           navigation.dispatch(
             CommonActions.reset({

@@ -11,6 +11,8 @@ import Stopwatch from "./Stopwatch/Stopwatch";
 import CountdownTimer from "./Timer/Timer";
 import SquareRootNavigator from "./Square/SquareRootNavigator";
 import NativeAdComponent from "../components/BannerAd";
+import TableNavigator from "./Tables/TableNavigator";
+import RiddlesNavigator from "./Riddles/RiddlesNavigator";
 
 const Drawer = createDrawerNavigator();
 
@@ -33,7 +35,8 @@ const DrawerNavigator = () => {
       <Drawer.Screen name="Timer" component={CountdownTimer} />
       <Drawer.Screen name="Square" component={SquareRootNavigator} />
       <Drawer.Screen name="Cube" component={SquareRootNavigator} />
-    
+      <Drawer.Screen name="Table" component={TableNavigator} />
+      <Drawer.Screen name="Riddles" component={RiddlesNavigator} />
     </Drawer.Navigator>
     <NativeAdComponent/>
     </>

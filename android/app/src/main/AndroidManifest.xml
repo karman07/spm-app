@@ -25,7 +25,7 @@
     <!-- ✅ Keep only ONE correct AdMob App ID meta-data -->
     <meta-data
       android:name="com.google.android.gms.ads.APPLICATION_ID"
-      android:value="ca-app-pub-3940256099942544~3347511713"
+      android:value="ca-app-pub-7069180478740738~1025649939"
       tools:replace="android:value"/>
 
     <!-- ✅ Optimization flags (only one of each is needed) -->
