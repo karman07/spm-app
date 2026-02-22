@@ -10,14 +10,14 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Quiz'>;
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-export default function Quiz({ navigation }: Props) {
+export default function Quiz({ navigation, route }: Props) {
+  const { totalQuestions } = route.params;
   const [riddle, setRiddle] = useState<any>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [correct, setCorrect] = useState<number>(0);
   const [wrong, setWrong] = useState<number>(0);
   const [showAnswer, setShowAnswer] = useState<boolean>(false);
   const [timeLeft, setTimeLeft] = useState<number>(60);
-  const [totalQuestions] = useState(5);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,7 +42,7 @@ export default function Quiz({ navigation }: Props) {
       setTimeLeft(prev => {
         if (prev <= 1) {
           clearInterval(interval);
-          navigation.replace('Result', { correct, wrong });
+          navigation.replace('Result', { correct, wrong, total: totalQuestions });
           return 0;
         }
         return prev - 1;
@@ -88,6 +88,7 @@ export default function Quiz({ navigation }: Props) {
       navigation.replace('Result', {
         correct,
         wrong,
+        total: totalQuestions,
       });
     } else {
       loadNew();

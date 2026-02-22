@@ -9,8 +9,7 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 type Props = NativeStackScreenProps<RootStackParamList, 'Result'>;
 
 export default function Result({ navigation, route }: Props) {
-  const { correct, wrong } = route.params;
-  const total = 5;
+  const { correct, wrong, total } = route.params;
 
   return (
     <View style={styles.container}>
@@ -45,7 +44,7 @@ export default function Result({ navigation, route }: Props) {
         <View style={styles.buttonWrapper}>
           <Button
             title="Try New Riddles"
-            onPress={() => navigation.replace('Quiz')}
+            onPress={() => navigation.replace('Quiz', { totalQuestions: total })}
           />
           <TouchableOpacity
             style={styles.secondaryButton}

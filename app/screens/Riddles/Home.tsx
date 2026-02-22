@@ -9,14 +9,15 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 export default function Home({ navigation }: Props) {
-  const scaleAnim = new Animated.Value(1);
+  const [selectedQuestions, setSelectedQuestions] = React.useState(5);
+  const scaleAnim = React.useRef(new Animated.Value(1)).current;
 
   const startQuiz = () => {
     Animated.sequence([
       Animated.timing(scaleAnim, { toValue: 0.95, duration: 100, useNativeDriver: true }),
       Animated.timing(scaleAnim, { toValue: 1, duration: 100, useNativeDriver: true }),
     ]).start(() => {
-      navigation.navigate('Quiz');
+      navigation.navigate('Quiz', { totalQuestions: selectedQuestions });
     });
   };
 
@@ -37,16 +38,31 @@ export default function Home({ navigation }: Props) {
 
           <View style={styles.statsRow}>
             <View style={styles.statBox}>
-              <Icon name="help-circle-outline" size={24} color="#666" />
-              <Text style={styles.statLabel}>Questions</Text>
-              <Text style={styles.statValue}>5</Text>
-            </View>
-            <View style={styles.verticalDivider} />
-            <View style={styles.statBox}>
               <Icon name="timer-outline" size={24} color="#666" />
               <Text style={styles.statLabel}>Time Limit</Text>
               <Text style={styles.statValue}>60s</Text>
             </View>
+          </View>
+
+          <View style={styles.divider} />
+
+          <Text style={styles.selectionTitle}>Select Question Count</Text>
+          <View style={styles.optionsGrid}>
+            {[5, 10, 15, 20].map((num) => (
+              <TouchableOpacity
+                key={num}
+                style={[
+                  styles.countOption,
+                  selectedQuestions === num && styles.countOptionSelected
+                ]}
+                onPress={() => setSelectedQuestions(num)}
+              >
+                <Text style={[
+                  styles.countText,
+                  selectedQuestions === num && styles.countTextSelected
+                ]}>{num}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
 
@@ -58,8 +74,8 @@ export default function Home({ navigation }: Props) {
             />
           </Animated.View>
         </View>
-      </ScrollView>
-    </View>
+      </ScrollView >
+    </View >
   );
 }
 
@@ -142,5 +158,42 @@ const styles = StyleSheet.create({
   },
   buttonWrapper: {
     paddingVertical: 30,
+  },
+  selectionTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#444',
+    textTransform: 'uppercase',
+    marginBottom: 15,
+    letterSpacing: 1,
+  },
+  optionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 10,
+    width: '100%',
+  },
+  countOption: {
+    width: 60,
+    height: 50,
+    borderRadius: 15,
+    backgroundColor: '#F8F9FA',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#EEE',
+  },
+  countOptionSelected: {
+    backgroundColor: BASE_COLOR + '10',
+    borderColor: BASE_COLOR,
+  },
+  countText: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#666',
+  },
+  countTextSelected: {
+    color: BASE_COLOR,
   },
 });
