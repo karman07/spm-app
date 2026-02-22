@@ -5,13 +5,13 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAMi_zTulMMCcKG97nccwkNpuAdRstCJt4",
-  authDomain: "sprouts-final.firebaseapp.com",
-  projectId: "sprouts-final",
-  storageBucket: "sprouts-final.firebasestorage.app",
-  messagingSenderId: "253715822034",
-  appId: "1:253715822034:web:d856e8faf400f1cc09040b",
-  measurementId: "G-TCTP62NLKH"
+  apiKey: "AIzaSyBlFdfoJ36-da21SrG7T3Dez3OEyNWtm-g",
+  authDomain: "spa-app-57d5c.firebaseapp.com",
+  projectId: "spa-app-57d5c",
+  storageBucket: "spa-app-57d5c.firebasestorage.app",
+  messagingSenderId: "62371647868",
+  appId: "1:62371647868:web:c7b786a61d5dd983a254f9",
+  measurementId: "G-01HN0ZEXW3"
 };
 
 

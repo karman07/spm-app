@@ -4,6 +4,8 @@ import { StackScreenProps } from "@react-navigation/stack";
 import { AddStackParamList } from "@/types/types";
 import Input from "../../components/Input";
 import Button from "../../components/Button";
+import { BASE_COLOR } from "@/colors/Colors";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 type Props = StackScreenProps<AddStackParamList, "Settings">;
 
@@ -16,52 +18,74 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Game Configuration</Text>
 
-      <Input 
-        placeholder="Enter number of digits (1-4)" 
-        value={digit} 
-        onChangeText={setDigit} 
-        keyboardType="numeric" 
-      />
-      
-      <Input 
-        placeholder="Enter number of rows" 
-        value={rows} 
-        onChangeText={setRows} 
-        keyboardType="numeric" 
-      />
-      
-      <Input 
-        placeholder="Time interval (seconds)" 
-        value={time} 
-        onChangeText={setTime} 
-        keyboardType="numeric" 
-      />
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Number of Digits (1-4)</Text>
+          <Input
+            placeholder="e.g. 2"
+            value={digit}
+            onChangeText={setDigit}
+            keyboardType="numeric"
+          />
+        </View>
 
-      <View style={styles.switchContainer}>
-        <Text style={styles.switchText}>🔊 Speak Numbers</Text>
-        <Switch 
-          value={speak} 
-          onValueChange={setSpeak} 
-          trackColor={{ false: "#ccc", true: "#4CAF50" }} 
-          thumbColor={speak ? "#fff" : "#777"} 
-        />
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Number of Rows</Text>
+          <Input
+            placeholder="e.g. 10"
+            value={rows}
+            onChangeText={setRows}
+            keyboardType="numeric"
+          />
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Time Interval (seconds)</Text>
+          <Input
+            placeholder="e.g. 1.5"
+            value={time}
+            onChangeText={setTime}
+            keyboardType="numeric"
+          />
+        </View>
+
+        <View style={styles.divider} />
+
+        <View style={styles.switchContainer}>
+          <View style={styles.switchLabelContainer}>
+            <Icon name="volume-high" size={24} color={BASE_COLOR} />
+            <Text style={styles.switchText}>Speak Numbers</Text>
+          </View>
+          <Switch
+            value={speak}
+            onValueChange={setSpeak}
+            trackColor={{ false: "#ddd", true: BASE_COLOR + "80" }}
+            thumbColor={speak ? BASE_COLOR : "#f4f3f4"}
+          />
+        </View>
+
+        <View style={styles.switchContainer}>
+          <View style={styles.switchLabelContainer}>
+            <Icon name="palette" size={24} color={BASE_COLOR} />
+            <Text style={styles.switchText}>Dynamic Colors</Text>
+          </View>
+          <Switch
+            value={changeColor}
+            onValueChange={setChangeColor}
+            trackColor={{ false: "#ddd", true: BASE_COLOR + "80" }}
+            thumbColor={changeColor ? BASE_COLOR : "#f4f3f4"}
+          />
+        </View>
       </View>
 
-      <View style={styles.switchContainer}>
-        <Text style={styles.switchText}>🎨 Change Number Color</Text>
-        <Switch 
-          value={changeColor} 
-          onValueChange={setChangeColor} 
-          trackColor={{ false: "#ccc", true: "#FF9800" }} 
-          thumbColor={changeColor ? "#fff" : "#777"} 
+      <View style={styles.buttonWrapper}>
+        <Button
+          title="Start Practice"
+          onPress={() => navigation.navigate("NumberDisplay", { digit, rows, time, speak, changeColor })}
         />
       </View>
-
-      <Button
-        title="▶ Start Game"
-        onPress={() => navigation.navigate("NumberDisplay", { digit, rows, time, speak, changeColor })}
-      />
     </View>
   );
 };
@@ -70,29 +94,60 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    justifyContent: "center",
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#F8F9FA",
   },
-  title: {
-    fontSize: 26,
-    fontWeight: "bold",
+  card: {
+    backgroundColor: "#FFF",
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
+    marginTop: 20,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#1A1A1A",
+    marginBottom: 25,
     textAlign: "center",
-    marginBottom: 20,
-    color: "#333",
+  },
+  inputGroup: {
+    marginBottom: 15,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#666",
+    marginBottom: 8,
+    marginLeft: 4,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#F0F0F0",
+    marginVertical: 20,
   },
   switchContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
-    marginBottom: 10,
+    marginBottom: 15,
+    paddingHorizontal: 5,
+  },
+  switchLabelContainer: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   switchText: {
-    fontSize: 18,
-    fontWeight: "500",
+    fontSize: 16,
+    fontWeight: "600",
     color: "#333",
+    marginLeft: 12,
+  },
+  buttonWrapper: {
+    paddingVertical: 30,
   },
 });
 

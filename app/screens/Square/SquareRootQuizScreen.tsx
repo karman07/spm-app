@@ -1,51 +1,61 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
-  KeyboardAvoidingView,
   Platform,
-  ScrollView,
+  Animated,
+  Dimensions,
 } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
 import { RootStackParamList } from './SquareRootNavigator';
 import { BASE_COLOR } from '@/colors/Colors';
+import Input from "../../components/Input";
+import Button from "../../components/Button";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 type Props = StackScreenProps<RootStackParamList, 'SquareRootQuiz'>;
 
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
 const SquareRootQuizScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { digit, time, questions } = route.params;
+  const { digit, time, questions, mode } = route.params;
 
-  const [timer, setTimer] = useState(time);
-  const [answer, setAnswer] = useState('');
-  const [quizOver, setQuizOver] = useState(false);
-  const [status, setStatus] = useState('');
-  const [score, setScore] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(1);
-  const [squareRoot, setSquareRoot] = useState(0);
-  const [square, setSquare] = useState(0);
+  const [targetNumber, setTargetNumber] = useState(0); // The number to find the root of
+  const [rootValue, setRootValue] = useState(0); // The actual root
+  const [answer, setAnswer] = useState('');
+  const [correct, setCorrect] = useState(0);
+  const [wrong, setWrong] = useState(0);
+  const [timer, setTimer] = useState(time);
+  const [quizOver, setQuizOver] = useState(false);
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
 
-  // Generate a new question
-  const generateQuestion = () => {
-    const min = Math.pow(10, digit - 1);
-    const max = Math.pow(10, digit) - 1;
-    const num = Math.floor(Math.random() * (max - min + 1)) + min;
-    setSquareRoot(num);
-    setSquare(num * num);
-  };
+  const progressAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    generateQuestion();
+    Animated.timing(progressAnim, {
+      toValue: currentQuestion / questions,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+  }, [currentQuestion, questions]);
+
+  useEffect(() => {
+    generateNewQuestion();
   }, []);
 
   useEffect(() => {
+    if (quizOver || showAnswer) return;
+
+    setTimer(time);
     const interval = setInterval(() => {
       setTimer((prev) => {
         if (prev <= 1) {
           clearInterval(interval);
-          handleAnswer(false); // Time up counts as wrong
+          handleTimeout();
           return 0;
         }
         return prev - 1;
@@ -53,144 +63,366 @@ const SquareRootQuizScreen: React.FC<Props> = ({ route, navigation }) => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [currentQuestion]);
+  }, [currentQuestion, quizOver, showAnswer]);
 
-  const handleAnswer = (submitted: boolean) => {
-    const correctAnswer = squareRoot;
-    const userAnswer = parseInt(answer);
-    const isCorrect = submitted && userAnswer === correctAnswer;
-
-    if (isCorrect) {
-      setStatus('Correct 🎉');
-      setScore((prev) => prev + 1);
-    } else {
-      setStatus(`Wrong ❌ (Answer: ${correctAnswer})`);
-    }
-
-    if (currentQuestion === questions) {
-      setQuizOver(true);
-    } else {
-      setTimeout(() => {
-        setCurrentQuestion((prev) => prev + 1);
-        setTimer(time);
-        setAnswer('');
-        setStatus('');
-        generateQuestion();
-      }, 1500); // Small delay before next question
-    }
+  const generateExactDigitNumber = (digits: number) => {
+    const min = Math.pow(10, digits - 1);
+    const max = Math.pow(10, digits) - 1;
+    let num;
+    do {
+      num = Math.floor(Math.random() * (max - min + 1)) + min;
+    } while (num === 1); // Never allow 1 for root
+    return num;
   };
 
-  return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView contentContainerStyle={styles.scroll}>
+  const generateNewQuestion = () => {
+    const root = generateExactDigitNumber(digit);
+    setRootValue(root);
+    setTargetNumber(mode === 'square' ? root * root : root * root * root);
+    setShowAnswer(false);
+  };
 
+  const handleTimeout = () => {
+    setWrong((prev) => prev + 1);
+    setIsCorrect(false);
+    setShowAnswer(true);
+
+    setTimeout(() => {
+      if (currentQuestion < questions) {
+        setCurrentQuestion((prev) => prev + 1);
+        setAnswer("");
+        generateNewQuestion();
+      } else {
+        setQuizOver(true);
+      }
+    }, 1500);
+  };
+
+  const handleCheckAnswer = () => {
+    const isAnswerCorrect = parseInt(answer) === rootValue;
+    setIsCorrect(isAnswerCorrect);
+    setShowAnswer(true);
+
+    if (isAnswerCorrect) {
+      setCorrect((prev) => prev + 1);
+    } else {
+      setWrong((prev) => prev + 1);
+    }
+
+    setTimeout(() => {
+      if (currentQuestion < questions) {
+        setCurrentQuestion((prev) => prev + 1);
+        setAnswer("");
+        generateNewQuestion();
+      } else {
+        setQuizOver(true);
+      }
+    }, 1500);
+  };
+
+  const restartQuiz = () => {
+    setCurrentQuestion(1);
+    setCorrect(0);
+    setWrong(0);
+    setTimer(time);
+    setAnswer("");
+    setQuizOver(false);
+    generateNewQuestion();
+  };
+
+  const progressWidth = progressAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0%", "100%"],
+  });
+
+  const symbol = mode === 'square' ? '√' : '∛';
+  const modeTitle = mode === 'square' ? 'Square Root' : 'Cube Root';
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <View style={styles.timerBadge}>
+          <Icon name="clock-outline" size={18} color="#333" />
+          <Text style={styles.timerText}>{timer}s</Text>
+        </View>
+        <TouchableOpacity
+          style={styles.exitButton}
+          onPress={() => navigation.navigate("Home", { mode })}
+        >
+          <Text style={styles.exitButtonText}>Exit</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.content}>
         {!quizOver ? (
           <>
-            <Text style={styles.timer}>⏱ Time Left: {timer}s</Text>
-            <Text style={styles.question}>
-              Question {currentQuestion} of {questions}
-            </Text>
-            <Text style={styles.question}>
-            √{square}
-            </Text>
+            <View style={styles.progressContainer}>
+              <Animated.View style={[styles.progressBar, { width: progressWidth }]} />
+            </View>
+            <Text style={styles.countText}>Question {currentQuestion} of {questions}</Text>
 
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your answer"
-              keyboardType="numeric"
-              value={answer}
-              onChangeText={setAnswer}
-              placeholderTextColor="#888"
-            />
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => handleAnswer(true)}
-            >
-              <Text style={styles.buttonText}>Submit</Text>
-            </TouchableOpacity>
-            {status !== '' && <Text style={styles.result}>{status}</Text>}
+            <View style={styles.questionCard}>
+              <Text style={styles.questionText}>
+                <Text style={{ color: BASE_COLOR, fontSize: 32 }}>{symbol}</Text>{targetNumber}
+              </Text>
+
+              <View style={styles.divider} />
+
+              <Text style={styles.inputLabel}>Enter the {modeTitle}:</Text>
+              <Input
+                placeholder="0"
+                value={answer}
+                onChangeText={setAnswer}
+                keyboardType="numeric"
+                autoFocus={true}
+              />
+
+              {showAnswer ? (
+                <View style={[styles.feedbackBadge, { backgroundColor: isCorrect ? "#4CAF5020" : "#F4433620" }]}>
+                  <Icon
+                    name={isCorrect ? "check-circle" : "close-circle"}
+                    size={28}
+                    color={isCorrect ? "#4CAF50" : "#F44336"}
+                  />
+                  <Text style={[styles.feedbackText, { color: isCorrect ? "#2E7D32" : "#D32F2F" }]}>
+                    {isCorrect ? "Correct!" : `Oops! It's ${rootValue}`}
+                  </Text>
+                </View>
+              ) : (
+                <View style={styles.buttonWrapper}>
+                  <Button title={currentQuestion < questions ? "Next" : "Finish"} onPress={handleCheckAnswer} />
+                </View>
+              )}
+            </View>
           </>
         ) : (
-          <>
-            <Text style={styles.result}>
-              Quiz Over! Your Score: {score} / {questions}
-            </Text>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => navigation.navigate('Home')}
-            >
-              <Text style={styles.buttonText}>Go Home</Text>
-            </TouchableOpacity>
-          </>
+          <View style={[styles.questionCard, { paddingVertical: 40 }]}>
+            <Text style={styles.title}>Practice Complete!</Text>
+
+            <View style={styles.finalScoreBoard}>
+              <View style={styles.scoreItem}>
+                <Text style={styles.scoreValue}>{correct}</Text>
+                <Text style={styles.scoreLabel}>Correct</Text>
+              </View>
+              <View style={styles.scoreDivider} />
+              <View style={styles.scoreItem}>
+                <Text style={[styles.scoreValue, { color: "#D32F2F" }]}>{wrong}</Text>
+                <Text style={styles.scoreLabel}>Missed</Text>
+              </View>
+            </View>
+
+            <View style={{ marginTop: 30, width: "100%" }}>
+              <Button title="Try Again" onPress={restartQuiz} />
+              <TouchableOpacity
+                style={styles.secondaryButton}
+                onPress={() => navigation.navigate("Home", { mode })}
+              >
+                <Text style={styles.secondaryButtonText}>Back to Settings</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         )}
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </View>
+
+      {!quizOver && (
+        <View style={styles.miniScoreboard}>
+          <Text style={[styles.miniScoreText, { color: "#2E7D32" }]}>Correct: {correct}</Text>
+          <View style={styles.miniDivider} />
+          <Text style={[styles.miniScoreText, { color: "#D32F2F" }]}>Wrong: {wrong}</Text>
+        </View>
+      )}
+    </View>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f2f7ff',
-  },
-  scroll: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: 20,
+    backgroundColor: "#F8F9FA",
   },
   header: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: BASE_COLOR,
-    textAlign: 'center',
-    marginBottom: 30,
+    height: 100,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    paddingHorizontal: 20,
+    paddingBottom: 10,
   },
-  timer: {
-    fontSize: 18,
-    textAlign: 'center',
-    marginBottom: 10,
-    color: '#333',
+  content: {
+    flex: 1,
+    paddingHorizontal: 20,
+    justifyContent: "center",
   },
-  question: {
-    fontSize: 22,
-    textAlign: 'center',
-    marginBottom: 15,
-    fontWeight: 'bold',
-    color: '#222',
-  },
-  input: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    borderColor: '#ddd',
+  timerBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFF",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
     borderWidth: 1,
-    padding: 15,
-    fontSize: 20,
-    marginBottom: 20,
-    textAlign: 'center',
-    color: '#333',
+    borderColor: "#EEE",
   },
-  button: {
+  timerText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#333",
+    marginLeft: 6,
+  },
+  exitButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: BASE_COLOR + "15",
+    borderRadius: 20,
+  },
+  exitButtonText: {
+    color: BASE_COLOR,
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  progressContainer: {
+    width: "100%",
+    height: 6,
+    backgroundColor: "#E0E0E0",
+    borderRadius: 3,
+    overflow: "hidden",
+    marginBottom: 10,
+  },
+  progressBar: {
+    height: "100%",
     backgroundColor: BASE_COLOR,
-    paddingVertical: 15,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginBottom: 15,
   },
-  buttonText: {
-    fontSize: 18,
-    color: '#fff',
-    fontWeight: 'bold',
+  countText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#888",
+    textAlign: "center",
+    marginBottom: 20,
   },
-  result: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    textAlign: 'center',
+  questionCard: {
+    backgroundColor: "#FFF",
+    borderRadius: 25,
+    padding: 24,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  questionText: {
+    fontSize: 38,
+    fontWeight: "900",
+    color: "#1A1A1A",
     marginVertical: 20,
-    color: '#333',
+    textAlign: 'center',
+  },
+  divider: {
+    width: "100%",
+    height: 1,
+    backgroundColor: "#EEE",
+    marginVertical: 20,
+  },
+  inputLabel: {
+    alignSelf: "flex-start",
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#666",
+    textTransform: "uppercase",
+    marginBottom: 10,
+    marginLeft: 4,
+  },
+  buttonWrapper: {
+    width: "100%",
+    marginTop: 10,
+  },
+  feedbackBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+    padding: 15,
+    borderRadius: 15,
+    marginTop: 10,
+  },
+  feedbackText: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginLeft: 10,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "800",
+    color: "#1A1A1A",
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  finalScoreBoard: {
+    flexDirection: "row",
+    backgroundColor: "#F8F9FA",
+    borderRadius: 20,
+    padding: 20,
+    width: "100%",
+    alignItems: "center",
+  },
+  scoreItem: {
+    flex: 1,
+    alignItems: "center",
+  },
+  scoreValue: {
+    fontSize: 28,
+    fontWeight: "900",
+    color: "#2E7D32",
+  },
+  scoreLabel: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#888",
+    textTransform: "uppercase",
+  },
+  scoreDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: "#DDD",
+  },
+  secondaryButton: {
+    marginTop: 15,
+    paddingVertical: 14,
+    alignItems: "center",
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: "#EEE",
+  },
+  secondaryButtonText: {
+    color: "#666",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  miniScoreboard: {
+    position: "absolute",
+    bottom: 40,
+    alignSelf: "center",
+    flexDirection: "row",
+    backgroundColor: "#FFF",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 25,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
+    alignItems: "center",
+  },
+  miniScoreText: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#444",
+  },
+  miniDivider: {
+    width: 1,
+    height: 15,
+    backgroundColor: "#EEE",
+    marginHorizontal: 15,
   },
 });
 

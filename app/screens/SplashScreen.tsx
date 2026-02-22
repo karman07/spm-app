@@ -33,25 +33,18 @@ export default function SplashScreen({ navigation }: any) {
 
     // clearStorage()
 
-    const checkSignupStatus = async () => {
-      try {
-        const signupStatus = await AsyncStorage.getItem("signup");
-        const routeName = signupStatus === "true" ? "Drawer" : "Auth";
-        console.log("Is Dev Mode:", __DEV__);
-        setTimeout(() => {
-          navigation.dispatch(
-            CommonActions.reset({
-              index: 0,
-              routes: [{ name: routeName }],
-            })
-          );
-        }, 2000);
-      } catch (error) {
-        console.error("Error fetching signup status", error);
-      }
+    const navigateToHome = () => {
+      setTimeout(() => {
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: "Drawer" }],
+          })
+        );
+      }, 2000);
     };
 
-    checkSignupStatus();
+    navigateToHome();
   }, []);
 
   return (

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Abacus",
     "slug": "abacus_app",
-    "version": "2.1.0",
+    "version": "2.2.0",
     "orientation": "portrait",
     "icon": "./assets/img/Sprouting_Minds_Abacus_(1).png",
     "scheme": "myapp",
@@ -11,6 +11,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.karman.spa.ios",
+      "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "NSUserTrackingUsageDescription": "This identifier will be used to show you personalized ads.",
         "SKAdNetworkItems": [
@@ -22,11 +23,12 @@
     },
     "android": {
       "package": "com.karman.spa",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/img/Sprouting_Minds_Abacus_(1).png",
         "backgroundColor": "#ffffff"
       },
-      "versionCode":  3
+      "versionCode": 4
     },
     "web": {
       "bundler": "metro",
@@ -40,7 +42,9 @@
         "react-native-google-mobile-ads",
         {
           "androidAppId": "ca-app-pub-7069180478740738~1025649939",
-          "iosAppId": "ca-app-pub-3940256099942544/3986624511",
+          "android_app_id": "ca-app-pub-7069180478740738~1025649939",
+          "iosAppId": "ca-app-pub-7069180478740738~1025649939",
+          "ios_app_id": "ca-app-pub-7069180478740738~1025649939",
           "userTrackingUsageDescription": "This identifier will be used to show you personalized ads.",
           "facebookMediation": false
         }
@@ -61,7 +65,8 @@
             "useFrameworks": "static"
           }
         }
-      ]
+      ],
+      "@react-native-google-signin/google-signin"
     ],
     "experiments": {
       "typedRoutes": true

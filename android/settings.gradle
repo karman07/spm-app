@@ -21,7 +21,7 @@ extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
   }
 }
 
-rootProject.name = 'abacus_app'
+rootProject.name = 'Abacus'
 
 dependencyResolutionManagement {
   versionCatalogs {

@@ -6,15 +6,22 @@ import {
   Alert,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
+  Modal,
+  Platform,
 } from "react-native";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithCredential } from "firebase/auth";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { auth, firestore } from "../../../config/firebase";
 import Button from "../../components/Button";
 import Input from "../../components/Input";
 import LottieView from "lottie-react-native";
 import { Picker } from "@react-native-picker/picker";
 import { BASE_COLOR } from "@/colors/Colors";
+import { GoogleSignin, statusCodes } from "@react-native-google-signin/google-signin";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { CommonActions } from "@react-navigation/native";
 
 const RegisterScreen: React.FC = ({ navigation }: any) => {
   const [name, setName] = useState<string>("");
@@ -23,6 +30,14 @@ const RegisterScreen: React.FC = ({ navigation }: any) => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [selectedInstitute, setSelectedInstitute] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [showPicker, setShowPicker] = useState<boolean>(false);
+
+  const institutes = [
+    { label: "ABC Institute", value: "abc" },
+    { label: "XYZ University", value: "xyz" },
+    { label: "LMN Academy", value: "lmn" },
+  ];
 
   const handleRegister = async () => {
     if (!name || !guardianName || !mobile || !email || !password || !selectedInstitute) {
@@ -30,11 +45,16 @@ const RegisterScreen: React.FC = ({ navigation }: any) => {
       return;
     }
 
+    if (password.length < 6) {
+      Alert.alert("Error", "Password should be at least 6 characters");
+      return;
+    }
+
+    setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const userId = userCredential.user.uid; // Get user ID
+      const userId = userCredential.user.uid;
 
-      // Save user details in Firestore
       await setDoc(doc(firestore, "users", userId), {
         name,
         guardianName,
@@ -48,6 +68,62 @@ const RegisterScreen: React.FC = ({ navigation }: any) => {
       navigation.navigate("Login");
     } catch (error: any) {
       Alert.alert("Error", error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleRegister = async () => {
+    setLoading(true);
+    try {
+      await GoogleSignin.hasPlayServices();
+      const result = await GoogleSignin.signIn();
+
+      if (result.type === 'success') {
+        const googleCredential = GoogleAuthProvider.credential(result.data.idToken);
+        const userCredential = await signInWithCredential(auth, googleCredential);
+        const user = userCredential.user;
+
+        // Check/Create user in Firestore
+        const userDocRef = doc(firestore, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        let userName = user.displayName || "Google User";
+
+        if (!userDoc.exists()) {
+          await setDoc(userDocRef, {
+            name: userName,
+            email: user.email,
+            createdAt: new Date(),
+            loginMethod: "google",
+          });
+        } else {
+          userName = userDoc.data().name;
+        }
+
+        await AsyncStorage.setItem(
+          "user",
+          JSON.stringify({
+            email: user.email,
+            name: userName,
+            isLoggedIn: true,
+          })
+        );
+        await AsyncStorage.setItem("signup", "true");
+
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: "Drawer" }],
+          })
+        );
+      }
+    } catch (error: any) {
+      if (error.code !== statusCodes.SIGN_IN_CANCELLED) {
+        Alert.alert("Google Error", error.message);
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -96,20 +172,86 @@ const RegisterScreen: React.FC = ({ navigation }: any) => {
         {/* Institute Dropdown */}
         <View style={styles.dropdownContainer}>
           <Text style={styles.dropdownLabel}>Select Institute</Text>
-          <Picker
-            selectedValue={selectedInstitute}
-            onValueChange={(itemValue: string) => setSelectedInstitute(itemValue)}
-            style={styles.picker}
-          >
-            <Picker.Item label="Select Institute" value="" />
-            <Picker.Item label="ABC Institute" value="abc" />
-            <Picker.Item label="XYZ University" value="xyz" />
-            <Picker.Item label="LMN Academy" value="lmn" />
-          </Picker>
+          {Platform.OS === "ios" ? (
+            <>
+              <TouchableOpacity
+                style={styles.pickerButton}
+                onPress={() => setShowPicker(true)}
+              >
+                <Text style={styles.pickerButtonText}>
+                  {selectedInstitute
+                    ? institutes.find((i) => i.value === selectedInstitute)?.label
+                    : "Choose Institute"}
+                </Text>
+              </TouchableOpacity>
+              <Modal
+                visible={showPicker}
+                transparent={true}
+                animationType="slide"
+              >
+                <View style={styles.modalContainer}>
+                  <View style={styles.pickerWrapper}>
+                    <TouchableOpacity
+                      style={styles.doneButton}
+                      onPress={() => setShowPicker(false)}
+                    >
+                      <Text style={styles.doneButtonText}>Done</Text>
+                    </TouchableOpacity>
+                    <Picker
+                      selectedValue={selectedInstitute}
+                      onValueChange={(itemValue: string) =>
+                        setSelectedInstitute(itemValue)
+                      }
+                    >
+                      <Picker.Item label="Select Institute" value="" />
+                      {institutes.map((i) => (
+                        <Picker.Item
+                          key={i.value}
+                          label={i.label}
+                          value={i.value}
+                        />
+                      ))}
+                    </Picker>
+                  </View>
+                </View>
+              </Modal>
+            </>
+          ) : (
+            <Picker
+              selectedValue={selectedInstitute}
+              onValueChange={(itemValue: string) => setSelectedInstitute(itemValue)}
+              style={styles.picker}
+            >
+              <Picker.Item label="Select Institute" value="" />
+              {institutes.map((i) => (
+                <Picker.Item key={i.value} label={i.label} value={i.value} />
+              ))}
+            </Picker>
+          )}
         </View>
 
         {/* Register Button */}
-        <Button title="Register" onPress={handleRegister} />
+        {loading ? (
+          <ActivityIndicator size="large" color={BASE_COLOR} style={{ marginVertical: 20 }} />
+        ) : (
+          <>
+            <Button title="Register" onPress={handleRegister} />
+
+            <View style={styles.dividerContainer}>
+              <View style={styles.divider} />
+              <Text style={styles.dividerText}>OR</Text>
+              <View style={styles.divider} />
+            </View>
+
+            <TouchableOpacity
+              style={styles.googleButton}
+              onPress={handleGoogleRegister}
+            >
+              <Icon name="google" size={24} color="#DB4437" style={styles.googleIcon} />
+              <Text style={styles.googleButtonText}>Sign Up with Google</Text>
+            </TouchableOpacity>
+          </>
+        )}
 
         {/* Already have an account? */}
         <TouchableOpacity onPress={() => navigation.navigate("Login")}>
@@ -164,12 +306,77 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 50,
   },
+  pickerButton: {
+    padding: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
+  },
+  pickerButtonText: {
+    fontSize: 16,
+    color: "#333",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  pickerWrapper: {
+    backgroundColor: "#fff",
+    paddingBottom: 40,
+  },
+  doneButton: {
+    alignItems: "flex-end",
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  doneButtonText: {
+    color: BASE_COLOR,
+    fontSize: 18,
+    fontWeight: "bold",
+  },
   link: {
     color: BASE_COLOR,
     textAlign: "center",
     marginTop: 15,
     fontSize: 16,
     fontWeight: "600",
+  },
+  dividerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 15,
+    width: "100%",
+  },
+  divider: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#ddd",
+  },
+  dividerText: {
+    marginHorizontal: 10,
+    color: "#888",
+    fontWeight: "600",
+  },
+  googleButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    paddingVertical: 12,
+    width: "100%",
+    marginBottom: 10,
+  },
+  googleIcon: {
+    marginRight: 10,
+  },
+  googleButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#555",
   },
 });
 

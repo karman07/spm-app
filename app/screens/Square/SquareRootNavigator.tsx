@@ -5,18 +5,26 @@ import HomeScreen from './HomeScreen';
 import SquareRootQuizScreen from './SquareRootQuizScreen';
 
 export type RootStackParamList = {
-  Home: undefined;
-  SquareRootQuiz: { questions: number; time: number, digit:number
-   };
+  Home: { mode: 'square' | 'cube' };
+  SquareRootQuiz: {
+    questions: number;
+    time: number;
+    digit: number;
+    mode: 'square' | 'cube';
+  };
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
 
-export default function SquareRootNavigator() {
+export default function SquareRootNavigator({ mode = 'square' }: { mode?: 'square' | 'cube' }) {
   return (
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="SquareRootQuiz" component={SquareRootQuizScreen} />
-      </Stack.Navigator>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen
+        name="Home"
+        component={HomeScreen}
+        initialParams={{ mode }}
+      />
+      <Stack.Screen name="SquareRootQuiz" component={SquareRootQuizScreen} />
+    </Stack.Navigator>
   );
 }

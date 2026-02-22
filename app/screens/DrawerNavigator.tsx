@@ -19,26 +19,30 @@ const Drawer = createDrawerNavigator();
 const DrawerNavigator = () => {
   return (
     <>
-    <Drawer.Navigator
-      drawerContent={(props) => <CustomDrawer {...props} />}
-      screenOptions={{
-        headerStyle: { backgroundColor: BASE_COLOR },
-        headerTintColor: "#fff",
-      }}
-    >
-      <Drawer.Screen name="Home" component={HomeScreen} />
-      <Drawer.Screen name="Add" component={AddNavigator} />
-      <Drawer.Screen name="Sub" component={SubtractNavigator} />
-      <Drawer.Screen name="Mul" component={MultiplicationNavigator} />
-      <Drawer.Screen name="Div" component={DivisionNavigator} />
-      <Drawer.Screen name="StopWatch" component={Stopwatch} />
-      <Drawer.Screen name="Timer" component={CountdownTimer} />
-      <Drawer.Screen name="Square" component={SquareRootNavigator} />
-      <Drawer.Screen name="Cube" component={SquareRootNavigator} />
-      <Drawer.Screen name="Table" component={TableNavigator} />
-      <Drawer.Screen name="Riddles" component={RiddlesNavigator} />
-    </Drawer.Navigator>
-    <NativeAdComponent/>
+      <Drawer.Navigator
+        drawerContent={(props) => <CustomDrawer {...props} />}
+        screenOptions={{
+          headerStyle: { backgroundColor: BASE_COLOR },
+          headerTintColor: "#fff",
+        }}
+      >
+        <Drawer.Screen name="Home" component={HomeScreen} />
+        <Drawer.Screen name="Add" component={AddNavigator} />
+        <Drawer.Screen name="Sub" component={SubtractNavigator} />
+        <Drawer.Screen name="Mul" component={MultiplicationNavigator} />
+        <Drawer.Screen name="Div" component={DivisionNavigator} />
+        <Drawer.Screen name="StopWatch" component={Stopwatch} />
+        <Drawer.Screen name="Timer" component={CountdownTimer} />
+        <Drawer.Screen name="Square">
+          {() => <SquareRootNavigator mode="square" />}
+        </Drawer.Screen>
+        <Drawer.Screen name="Cube">
+          {() => <SquareRootNavigator mode="cube" />}
+        </Drawer.Screen>
+        <Drawer.Screen name="Table" component={TableNavigator} />
+        <Drawer.Screen name="Riddles" component={RiddlesNavigator} />
+      </Drawer.Navigator>
+      <NativeAdComponent />
     </>
   );
 };
