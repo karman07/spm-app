@@ -16,6 +16,14 @@ const SubtractSettingsScreen: React.FC<Props> = ({ navigation }) => {
   const [speak, setSpeak] = useState(false);
   const [changeColor, setChangeColor] = useState(false);
 
+  const isSpeakDisabled = parseFloat(time) < 1;
+
+  React.useEffect(() => {
+    if (isSpeakDisabled) {
+      setSpeak(false);
+    }
+  }, [time]);
+
   return (
     <View style={styles.container}>
       <View style={styles.card}>
@@ -47,7 +55,7 @@ const SubtractSettingsScreen: React.FC<Props> = ({ navigation }) => {
             placeholder="e.g. 1.5"
             value={time}
             onChangeText={setTime}
-            keyboardType="numeric"
+            keyboardType="decimal-pad"
           />
         </View>
 
@@ -61,7 +69,8 @@ const SubtractSettingsScreen: React.FC<Props> = ({ navigation }) => {
           <Switch
             value={speak}
             onValueChange={setSpeak}
-            trackColor={{ false: "#ddd", true: BASE_COLOR + "80" }}
+            disabled={isSpeakDisabled}
+            trackColor={{ false: "#ddd", true: isSpeakDisabled ? "#eee" : BASE_COLOR + "80" }}
             thumbColor={speak ? BASE_COLOR : "#f4f3f4"}
           />
         </View>

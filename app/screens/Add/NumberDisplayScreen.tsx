@@ -36,7 +36,7 @@ const NumberDisplayScreen: React.FC<Props> = ({ navigation, route }) => {
       interval = setInterval(() => {
         generateAndDisplayNumber();
         setCount((prev) => prev + 1);
-      }, parseInt(time) * 1000);
+      }, parseFloat(time) * 1000);
     } else {
       setTimeout(() => {
         navigation.navigate("Answer", { sum, digit, rows, time, speak, changeColor });

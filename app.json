@@ -2,7 +2,7 @@
   "expo": {
     "name": "Abacus",
     "slug": "abacus_app",
-    "version": "2.2.0",
+    "version": "2.2.1",
     "orientation": "portrait",
     "icon": "./assets/img/Sprouting_Minds_Abacus_(1).png",
     "scheme": "myapp",
@@ -28,7 +28,7 @@
         "foregroundImage": "./assets/img/Sprouting_Minds_Abacus_(1).png",
         "backgroundColor": "#ffffff"
       },
-      "versionCode": 4
+      "versionCode": 5
     },
     "web": {
       "bundler": "metro",
