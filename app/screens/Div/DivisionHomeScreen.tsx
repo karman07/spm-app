@@ -1,3 +1,8 @@
+import { useTheme } from "@/context/ThemeContext";
+import type { ThemeColors } from "@/colors/Colors";
+import SelectInput, { numberOptions } from "../../components/SelectInput";
+import { checkFields, validateInteger, validateSecondsField, MAX_QUESTIONS, MAX_QUIZ_SECONDS, MAX_INTERVAL_SECONDS, MIN_SECONDS } from "@/utils/validation";
+import { parseSeconds, QUIZ_TICK_SECONDS } from "@/utils/time";
 import React, { useState } from "react";
 import { View, Text, StyleSheet, Animated } from "react-native";
 import { StackScreenProps } from "@react-navigation/stack";
@@ -9,6 +14,8 @@ import Button from "../../components/Button";
 type Props = StackScreenProps<DivRootStackParamList, "Home">;
 
 const DivisionHomeScreen: React.FC<Props> = ({ navigation }) => {
+  const { colors: c } = useTheme();
+  const styles = React.useMemo(() => createStyles(c), [c]);
   const [questions, setQuestions] = useState("");
   const [time, setTime] = useState("");
   const [dividendDigits, setDividendDigits] = useState("");
@@ -16,14 +23,26 @@ const DivisionHomeScreen: React.FC<Props> = ({ navigation }) => {
   const scaleAnim = new Animated.Value(1);
 
   const startQuiz = () => {
-    if (!questions || !time || !dividendDigits || !divisorDigits) return;
+    if (
+      !checkFields([
+        validateInteger("Number of questions", questions, 1, MAX_QUESTIONS),
+        validateSecondsField("Time per question", time, MIN_SECONDS, MAX_QUIZ_SECONDS, 1),
+        validateInteger("Dividend digits", dividendDigits, 2, 7),
+        validateInteger("Divisor digits", divisorDigits, 1, 6),
+        parseInt(divisorDigits) >= parseInt(dividendDigits)
+          ? "Divisor digits must be fewer than dividend digits."
+          : null,
+      ])
+    ) {
+      return;
+    }
     Animated.sequence([
       Animated.timing(scaleAnim, { toValue: 0.95, duration: 100, useNativeDriver: true }),
       Animated.timing(scaleAnim, { toValue: 1, duration: 100, useNativeDriver: true }),
     ]).start(() => {
       navigation.navigate("Division", {
         questions: parseInt(questions),
-        time: parseInt(time),
+        time: parseSeconds(time, QUIZ_TICK_SECONDS),
         dividendDigits: parseInt(dividendDigits),
         divisorDigits: parseInt(divisorDigits),
       });
@@ -37,12 +56,13 @@ const DivisionHomeScreen: React.FC<Props> = ({ navigation }) => {
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Number of Questions</Text>
-          <Input
-            placeholder="e.g. 10"
-            value={questions}
-            onChangeText={setQuestions}
-            keyboardType="numeric"
-          />
+          <SelectInput
+  placeholder="e.g. 10"
+  value={questions}
+  onChange={setQuestions}
+  options={numberOptions(1, 100)}
+  allowCustom={{ min: 1, max: 100000 }}
+/>
         </View>
 
         <View style={styles.inputGroup}>
@@ -51,28 +71,31 @@ const DivisionHomeScreen: React.FC<Props> = ({ navigation }) => {
             placeholder="e.g. 5"
             value={time}
             onChangeText={setTime}
-            keyboardType="numeric"
+            keyboardType="decimal-pad"
           />
         </View>
 
         <View style={styles.statsRow}>
           <View style={styles.inputGroupSmall}>
             <Text style={styles.label}>Dividend Digits</Text>
-            <Input
-              placeholder="1-4"
-              value={dividendDigits}
-              onChangeText={setDividendDigits}
-              keyboardType="numeric"
-            />
+            <SelectInput
+  placeholder="2-7"
+  value={dividendDigits}
+  onChange={(v) => {
+    setDividendDigits(v);
+    if (divisorDigits && parseInt(divisorDigits) >= parseInt(v)) setDivisorDigits("");
+  }}
+  options={numberOptions(2, 7)}
+/>
           </View>
           <View style={styles.inputGroupSmall}>
             <Text style={styles.label}>Divisor Digits</Text>
-            <Input
-              placeholder="1-2"
-              value={divisorDigits}
-              onChangeText={setDivisorDigits}
-              keyboardType="numeric"
-            />
+            <SelectInput
+  placeholder="1-6"
+  value={divisorDigits}
+  onChange={setDivisorDigits}
+  options={numberOptions(1, dividendDigits ? Math.max(1, parseInt(dividendDigits) - 1) : 6)}
+/>
           </View>
         </View>
       </View>
@@ -89,14 +112,14 @@ const DivisionHomeScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (c: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#F8F9FA",
+    backgroundColor: c.background,
   },
   card: {
-    backgroundColor: "#FFF",
+    backgroundColor: c.surface,
     borderRadius: 20,
     padding: 20,
     shadowColor: "#000",
@@ -109,7 +132,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: "800",
-    color: "#1A1A1A",
+    color: c.text,
     marginBottom: 25,
     textAlign: "center",
   },
@@ -123,7 +146,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 12,
     fontWeight: "700",
-    color: "#888",
+    color: c.textMuted,
     textTransform: "uppercase",
     marginBottom: 8,
     marginLeft: 4,

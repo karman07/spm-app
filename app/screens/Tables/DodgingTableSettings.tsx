@@ -1,3 +1,8 @@
+import { useTheme } from "@/context/ThemeContext";
+import type { ThemeColors } from "@/colors/Colors";
+import SelectInput, { numberOptions } from "../../components/SelectInput";
+import { checkFields, validateInteger, validateSecondsField, MAX_QUESTIONS, MAX_QUIZ_SECONDS, MAX_INTERVAL_SECONDS, MIN_SECONDS } from "@/utils/validation";
+import { parseSeconds, QUIZ_TICK_SECONDS } from "@/utils/time";
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Animated, ScrollView, Platform, KeyboardAvoidingView } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
@@ -9,6 +14,8 @@ import Button from "../../components/Button";
 type Props = StackScreenProps<RootStackParamList, 'DodgingTableSettings'>;
 
 const DodgingTableSettings: React.FC<Props> = ({ navigation }) => {
+  const { colors: c } = useTheme();
+  const styles = React.useMemo(() => createStyles(c), [c]);
     const [startTable, setStartTable] = useState('2');
     const [endTable, setEndTable] = useState('20');
     const [questions, setQuestions] = useState('10');
@@ -19,10 +26,19 @@ const DodgingTableSettings: React.FC<Props> = ({ navigation }) => {
         const start = parseInt(startTable);
         const end = parseInt(endTable);
         const qCount = parseInt(questions);
-        const tPerQ = parseInt(time);
+        const tPerQ = parseSeconds(time, QUIZ_TICK_SECONDS);
 
-        if (isNaN(start) || isNaN(end) || isNaN(qCount) || isNaN(tPerQ)) return;
-        if (start > end) return;
+        if (
+            !checkFields([
+                validateInteger("From table", startTable, 1, 10000),
+                validateInteger("To table", endTable, 1, 10000),
+                start > end ? "From table must not be greater than To table." : null,
+                validateInteger("Number of questions", questions, 1, MAX_QUESTIONS),
+                validateSecondsField("Time per question", time, MIN_SECONDS, MAX_QUIZ_SECONDS, 1),
+            ])
+        ) {
+            return;
+        }
 
         Animated.sequence([
             Animated.timing(scaleAnim, { toValue: 0.95, duration: 100, useNativeDriver: true }),
@@ -49,32 +65,35 @@ const DodgingTableSettings: React.FC<Props> = ({ navigation }) => {
                     <View style={styles.row}>
                         <View style={styles.inputGroupSmall}>
                             <Text style={styles.label}>From Table</Text>
-                            <Input
-                                placeholder="2"
-                                value={startTable}
-                                onChangeText={setStartTable}
-                                keyboardType="numeric"
-                            />
+                            <SelectInput
+  placeholder="2"
+  value={startTable}
+  onChange={setStartTable}
+  options={numberOptions(1, 100)}
+  allowCustom={{ min: 1, max: 10000 }}
+/>
                         </View>
                         <View style={styles.inputGroupSmall}>
                             <Text style={styles.label}>To Table</Text>
-                            <Input
-                                placeholder="20"
-                                value={endTable}
-                                onChangeText={setEndTable}
-                                keyboardType="numeric"
-                            />
+                            <SelectInput
+  placeholder="20"
+  value={endTable}
+  onChange={setEndTable}
+  options={numberOptions(1, 100)}
+  allowCustom={{ min: 1, max: 10000 }}
+/>
                         </View>
                     </View>
 
                     <View style={styles.inputGroup}>
                         <Text style={styles.label}>Number of Questions</Text>
-                        <Input
-                            placeholder="e.g. 10"
-                            value={questions}
-                            onChangeText={setQuestions}
-                            keyboardType="numeric"
-                        />
+                        <SelectInput
+  placeholder="e.g. 10"
+  value={questions}
+  onChange={setQuestions}
+  options={numberOptions(1, 100)}
+  allowCustom={{ min: 1, max: 100000 }}
+/>
                     </View>
 
                     <View style={styles.inputGroup}>
@@ -83,7 +102,7 @@ const DodgingTableSettings: React.FC<Props> = ({ navigation }) => {
                             placeholder="e.g. 5"
                             value={time}
                             onChangeText={setTime}
-                            keyboardType="numeric"
+                            keyboardType="decimal-pad"
                         />
                     </View>
                 </View>
@@ -101,10 +120,10 @@ const DodgingTableSettings: React.FC<Props> = ({ navigation }) => {
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (c: ThemeColors) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#F8F9FA",
+        backgroundColor: c.background,
     },
     scrollContent: {
         padding: 20,
@@ -112,7 +131,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     card: {
-        backgroundColor: "#FFF",
+        backgroundColor: c.surface,
         borderRadius: 20,
         padding: 20,
         shadowColor: "#000",
@@ -124,7 +143,7 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 20,
         fontWeight: "800",
-        color: "#1A1A1A",
+        color: c.text,
         marginBottom: 25,
         textAlign: "center",
     },
@@ -144,7 +163,7 @@ const styles = StyleSheet.create({
     label: {
         fontSize: 12,
         fontWeight: "700",
-        color: "#888",
+        color: c.textMuted,
         textTransform: "uppercase",
         marginBottom: 8,
         marginLeft: 4,

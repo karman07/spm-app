@@ -1,3 +1,8 @@
+import { useTheme } from "@/context/ThemeContext";
+import type { ThemeColors } from "@/colors/Colors";
+import SelectInput, { numberOptions } from "../../components/SelectInput";
+import { checkFields, validateInteger, validateSecondsField, MAX_QUESTIONS, MAX_QUIZ_SECONDS, MAX_INTERVAL_SECONDS, MIN_SECONDS } from "@/utils/validation";
+import { parseSeconds, QUIZ_TICK_SECONDS } from "@/utils/time";
 import React, { useState } from "react";
 import { View, Text, StyleSheet, Animated } from "react-native";
 import { StackScreenProps } from "@react-navigation/stack";
@@ -9,6 +14,8 @@ import Button from "../../components/Button";
 type Props = StackScreenProps<MulRootStackParamList, "Home">;
 
 const HomeScreen: React.FC<Props> = ({ navigation }) => {
+  const { colors: c } = useTheme();
+  const styles = React.useMemo(() => createStyles(c), [c]);
   const [questions, setQuestions] = useState("");
   const [time, setTime] = useState("");
   const [multiplier, setMultiplier] = useState("");
@@ -16,14 +23,26 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const scaleAnim = new Animated.Value(1);
 
   const startQuiz = () => {
-    if (!questions || !time || !multiplier || !multiplied) return;
+    if (
+      !checkFields([
+        validateInteger("Number of questions", questions, 1, MAX_QUESTIONS),
+        validateSecondsField("Time per question", time, MIN_SECONDS, MAX_QUIZ_SECONDS, 1),
+        validateInteger("Multiplier digits", multiplier, 1, 8),
+        validateInteger("Multiplied digits", multiplied, 1, 8),
+        parseInt(multiplier) + parseInt(multiplied) > 15
+          ? "Multiplier and multiplied digits together can be at most 15."
+          : null,
+      ])
+    ) {
+      return;
+    }
     Animated.sequence([
       Animated.timing(scaleAnim, { toValue: 0.95, duration: 100, useNativeDriver: true }),
       Animated.timing(scaleAnim, { toValue: 1, duration: 100, useNativeDriver: true }),
     ]).start(() => {
       navigation.navigate("Multiplication", {
         questions: parseInt(questions),
-        time: parseInt(time),
+        time: parseSeconds(time, QUIZ_TICK_SECONDS),
         multiplier: parseInt(multiplier),
         multiplied: parseInt(multiplied),
       });
@@ -37,12 +56,13 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Number of Questions</Text>
-          <Input
-            placeholder="e.g. 10"
-            value={questions}
-            onChangeText={setQuestions}
-            keyboardType="numeric"
-          />
+          <SelectInput
+  placeholder="e.g. 10"
+  value={questions}
+  onChange={setQuestions}
+  options={numberOptions(1, 100)}
+  allowCustom={{ min: 1, max: 100000 }}
+/>
         </View>
 
         <View style={styles.inputGroup}>
@@ -51,28 +71,30 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
             placeholder="e.g. 5"
             value={time}
             onChangeText={setTime}
-            keyboardType="numeric"
+            keyboardType="decimal-pad"
           />
         </View>
 
         <View style={styles.statsRow}>
           <View style={styles.inputGroupSmall}>
             <Text style={styles.label}>Multiplier Digits</Text>
-            <Input
-              placeholder="1-3"
-              value={multiplier}
-              onChangeText={setMultiplier}
-              keyboardType="numeric"
-            />
+            <SelectInput
+  placeholder="1-7"
+  value={multiplier}
+  onChange={setMultiplier}
+  options={numberOptions(1, 7)}
+  allowCustom={{ min: 1, max: 8 }}
+/>
           </View>
           <View style={styles.inputGroupSmall}>
             <Text style={styles.label}>Multiplied Digits</Text>
-            <Input
-              placeholder="1-3"
-              value={multiplied}
-              onChangeText={setMultiplied}
-              keyboardType="numeric"
-            />
+            <SelectInput
+  placeholder="1-7"
+  value={multiplied}
+  onChange={setMultiplied}
+  options={numberOptions(1, 7)}
+  allowCustom={{ min: 1, max: 8 }}
+/>
           </View>
         </View>
       </View>
@@ -89,14 +111,14 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (c: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#F8F9FA",
+    backgroundColor: c.background,
   },
   card: {
-    backgroundColor: "#FFF",
+    backgroundColor: c.surface,
     borderRadius: 20,
     padding: 20,
     shadowColor: "#000",
@@ -109,7 +131,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: "800",
-    color: "#1A1A1A",
+    color: c.text,
     marginBottom: 25,
     textAlign: "center",
   },
@@ -123,7 +145,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 12,
     fontWeight: "700",
-    color: "#888",
+    color: c.textMuted,
     textTransform: "uppercase",
     marginBottom: 8,
     marginLeft: 4,

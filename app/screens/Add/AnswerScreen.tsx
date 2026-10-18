@@ -1,3 +1,6 @@
+import { useTheme } from "@/context/ThemeContext";
+import type { ThemeColors } from "@/colors/Colors";
+import { parseSeconds, formatSeconds } from "@/utils/time";
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, BackHandler } from "react-native";
 import { StackScreenProps } from "@react-navigation/stack";
@@ -11,6 +14,8 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 type Props = StackScreenProps<AddStackParamList, "Answer">;
 
 const AnswerScreen: React.FC<Props> = ({ navigation, route }) => {
+  const { colors: c } = useTheme();
+  const styles = React.useMemo(() => createStyles(c), [c]);
   const { sum, digit, rows, time, speak, changeColor } = route.params;
   const [userAnswer, setUserAnswer] = useState("");
   const [showAnswer, setShowAnswer] = useState(false);
@@ -95,7 +100,7 @@ const AnswerScreen: React.FC<Props> = ({ navigation, route }) => {
           </View>
           <View style={styles.statBox}>
             <Text style={styles.statLabel}>Time</Text>
-            <Text style={styles.statValue}>{time}s</Text>
+            <Text style={styles.statValue}>{formatSeconds(parseSeconds(time))}s</Text>
           </View>
         </View>
 
@@ -125,7 +130,7 @@ const AnswerScreen: React.FC<Props> = ({ navigation, route }) => {
                 size={34}
                 color={isCorrect ? "#4CAF50" : "#F44336"}
               />
-              <Text style={[styles.result, { color: isCorrect ? "#2E7D32" : "#D32F2F" }]}>
+              <Text style={[styles.result, { color: isCorrect ? c.primary : c.danger }]}>
                 {isCorrect ? "Perfectly Correct!" : `Wrong! Correct Sum: ${sum}`}
               </Text>
             </View>
@@ -138,10 +143,10 @@ const AnswerScreen: React.FC<Props> = ({ navigation, route }) => {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.tryAgainButton, { marginTop: 15, borderColor: '#888' }]}
+              style={[styles.tryAgainButton, { marginTop: 15, borderColor: c.textMuted }]}
               onPress={() => navigation.navigate("Settings")}
             >
-              <Text style={[styles.tryAgainText, { color: '#666' }]}>Change Settings</Text>
+              <Text style={[styles.tryAgainText, { color: c.textMuted }]}>Change Settings</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -154,7 +159,7 @@ const AnswerScreen: React.FC<Props> = ({ navigation, route }) => {
         </View>
         <View style={styles.scoreDivider} />
         <View style={styles.scoreItem}>
-          <Text style={[styles.scoreValue, { color: "#D32F2F" }]}>{wrongCount}</Text>
+          <Text style={[styles.scoreValue, { color: c.danger }]}>{wrongCount}</Text>
           <Text style={styles.scoreLabel}>Missed</Text>
         </View>
       </View>
@@ -162,15 +167,15 @@ const AnswerScreen: React.FC<Props> = ({ navigation, route }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (c: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#F8F9FA",
+    backgroundColor: c.background,
     justifyContent: "center",
   },
   card: {
-    backgroundColor: "#FFF",
+    backgroundColor: c.surface,
     borderRadius: 25,
     padding: 24,
     shadowColor: "#000",
@@ -182,7 +187,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "800",
-    color: "#1A1A1A",
+    color: c.text,
     marginBottom: 20,
     textAlign: "center",
   },
@@ -197,32 +202,32 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: 12,
     fontWeight: "700",
-    color: "#888",
+    color: c.textMuted,
     textTransform: "uppercase",
     marginBottom: 4,
   },
   statValue: {
     fontSize: 18,
     fontWeight: "800",
-    color: BASE_COLOR,
+    color: c.primary,
   },
   divider: {
     height: 1,
-    backgroundColor: "#EEE",
+    backgroundColor: c.border,
     marginVertical: 20,
   },
   inputLabel: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#444",
+    color: c.text,
     marginBottom: 10,
   },
   button: {
-    backgroundColor: BASE_COLOR,
+    backgroundColor: c.button,
     paddingVertical: 16,
     borderRadius: 12,
     marginTop: 10,
-    shadowColor: BASE_COLOR,
+    shadowColor: c.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -256,19 +261,19 @@ const styles = StyleSheet.create({
   },
   tryAgainButton: {
     borderWidth: 2,
-    borderColor: BASE_COLOR,
+    borderColor: c.primary,
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: "center",
   },
   tryAgainText: {
-    color: BASE_COLOR,
+    color: c.primary,
     fontSize: 16,
     fontWeight: "700",
   },
   scoreBoard: {
     flexDirection: "row",
-    backgroundColor: "#FFF",
+    backgroundColor: c.surface,
     marginTop: 30,
     borderRadius: 20,
     padding: 20,
@@ -286,19 +291,19 @@ const styles = StyleSheet.create({
   scoreValue: {
     fontSize: 24,
     fontWeight: "900",
-    color: "#2E7D32",
+    color: c.primary,
   },
   scoreLabel: {
     fontSize: 12,
     fontWeight: "700",
-    color: "#888",
+    color: c.textMuted,
     textTransform: "uppercase",
     marginTop: 4,
   },
   scoreDivider: {
     width: 1,
     height: 40,
-    backgroundColor: "#EEE",
+    backgroundColor: c.border,
   },
 });
 

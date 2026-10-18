@@ -1,3 +1,5 @@
+import { useTheme } from "@/context/ThemeContext";
+import type { ThemeColors } from "@/colors/Colors";
 import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, ScrollView, Animated } from 'react-native';
 import { BASE_COLOR } from '@/colors/Colors';
@@ -9,6 +11,8 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 export default function Home({ navigation }: Props) {
+  const { colors: c } = useTheme();
+  const styles = React.useMemo(() => createStyles(c), [c]);
   const [selectedQuestions, setSelectedQuestions] = React.useState(5);
   const scaleAnim = React.useRef(new Animated.Value(1)).current;
 
@@ -26,7 +30,7 @@ export default function Home({ navigation }: Props) {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.card}>
           <View style={styles.iconCircle}>
-            <Icon name="brain" size={40} color={BASE_COLOR} />
+            <Icon name="brain" size={40} color={c.primary} />
           </View>
 
           <Text style={styles.sectionTitle}>Math Riddles</Text>
@@ -38,7 +42,7 @@ export default function Home({ navigation }: Props) {
 
           <View style={styles.statsRow}>
             <View style={styles.statBox}>
-              <Icon name="timer-outline" size={24} color="#666" />
+              <Icon name="timer-outline" size={24} color={c.textMuted} />
               <Text style={styles.statLabel}>Time Limit</Text>
               <Text style={styles.statValue}>60s</Text>
             </View>
@@ -79,10 +83,10 @@ export default function Home({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8F9FA",
+    backgroundColor: c.background,
   },
   scrollContent: {
     padding: 20,
@@ -90,7 +94,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   card: {
-    backgroundColor: "#FFF",
+    backgroundColor: c.surface,
     borderRadius: 25,
     padding: 30,
     alignItems: 'center',
@@ -104,7 +108,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: BASE_COLOR + '10',
+    backgroundColor: c.button + '10',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
@@ -112,13 +116,13 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 24,
     fontWeight: "800",
-    color: "#1A1A1A",
+    color: c.text,
     marginBottom: 12,
     textAlign: "center",
   },
   subtitle: {
     fontSize: 15,
-    color: '#666',
+    color: c.textMuted,
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 25,
@@ -126,7 +130,7 @@ const styles = StyleSheet.create({
   divider: {
     width: '100%',
     height: 1,
-    backgroundColor: '#F1F3F5',
+    backgroundColor: c.background,
     marginBottom: 25,
   },
   statsRow: {
@@ -141,7 +145,7 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#888',
+    color: c.textMuted,
     textTransform: 'uppercase',
     marginTop: 8,
     marginBottom: 4,
@@ -149,12 +153,12 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 18,
     fontWeight: '800',
-    color: BASE_COLOR,
+    color: c.primary,
   },
   verticalDivider: {
     width: 1,
     height: '100%',
-    backgroundColor: '#EEE',
+    backgroundColor: c.border,
   },
   buttonWrapper: {
     paddingVertical: 30,
@@ -162,7 +166,7 @@ const styles = StyleSheet.create({
   selectionTitle: {
     fontSize: 14,
     fontWeight: '800',
-    color: '#444',
+    color: c.text,
     textTransform: 'uppercase',
     marginBottom: 15,
     letterSpacing: 1,
@@ -178,22 +182,22 @@ const styles = StyleSheet.create({
     width: 60,
     height: 50,
     borderRadius: 15,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: c.background,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#EEE',
+    borderColor: c.border,
   },
   countOptionSelected: {
-    backgroundColor: BASE_COLOR + '10',
-    borderColor: BASE_COLOR,
+    backgroundColor: c.button + '10',
+    borderColor: c.primary,
   },
   countText: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#666',
+    color: c.textMuted,
   },
   countTextSelected: {
-    color: BASE_COLOR,
+    color: c.primary,
   },
 });

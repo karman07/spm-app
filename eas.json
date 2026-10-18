@@ -18,10 +18,26 @@
       "autoIncrement": true,
       "android": {
         "buildType": "app-bundle"
+      },
+      "ios": {
+        "resourceClass": "m-medium"
       }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "android": {
+        "serviceAccountKeyPath": "./play-store-api-access-457209-629b090a8126.json",
+        "track": "production",
+        "releaseStatus": "draft"
+      },
+      "ios": {
+        "ascAppId": "6824126523",
+        "appleTeamId": "59HXVKF5DB",
+        "ascApiKeyPath": "./AuthKey_D368YKLYJ5.p8",
+        "ascApiKeyIssuerId": "4fa17945-d507-467b-accc-0d11bd0bd837",
+        "ascApiKeyId": "D368YKLYJ5"
+      }
+    }
   }
 }

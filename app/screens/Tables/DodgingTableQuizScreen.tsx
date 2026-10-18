@@ -1,3 +1,6 @@
+import { useTheme } from "@/context/ThemeContext";
+import type { ThemeColors } from "@/colors/Colors";
+import { QUIZ_TICK_SECONDS, tickDown, formatSeconds } from "@/utils/time";
 import React, { useState, useEffect, useRef } from 'react';
 import {
     View,
@@ -19,6 +22,8 @@ type Props = StackScreenProps<RootStackParamList, 'DodgingTableQuiz'>;
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const DodgingTableQuizScreen: React.FC<Props> = ({ route, navigation }) => {
+  const { colors: c } = useTheme();
+  const styles = React.useMemo(() => createStyles(c), [c]);
     const { startTable, endTable, questions, time } = route.params;
 
     const [currentQuestion, setCurrentQuestion] = useState(1);
@@ -52,14 +57,14 @@ const DodgingTableQuizScreen: React.FC<Props> = ({ route, navigation }) => {
         setTimer(time);
         const interval = setInterval(() => {
             setTimer((prev) => {
-                if (prev <= 1) {
+                if (prev <= QUIZ_TICK_SECONDS + 0.001) {
                     clearInterval(interval);
                     handleTimeout();
                     return 0;
                 }
-                return prev - 1;
+                return tickDown(prev);
             });
-        }, 1000);
+        }, QUIZ_TICK_SECONDS * 1000);
 
         return () => clearInterval(interval);
     }, [currentQuestion, quizOver, showAnswer]);
@@ -129,8 +134,8 @@ const DodgingTableQuizScreen: React.FC<Props> = ({ route, navigation }) => {
         <View style={styles.container}>
             <View style={styles.header}>
                 <View style={styles.timerBadge}>
-                    <Icon name="clock-outline" size={18} color="#333" />
-                    <Text style={styles.timerText}>{timer}s</Text>
+                    <Icon name="clock-outline" size={18} color={c.text} />
+                    <Text style={styles.timerText}>{formatSeconds(timer)}s</Text>
                 </View>
                 <TouchableOpacity
                     style={styles.exitButton}
@@ -150,7 +155,7 @@ const DodgingTableQuizScreen: React.FC<Props> = ({ route, navigation }) => {
 
                         <View style={styles.questionCard}>
                             <Text style={styles.questionText}>
-                                {tableNum} <Text style={{ color: BASE_COLOR }}>×</Text> {multiplier}
+                                {tableNum} <Text style={{ color: c.primary }}>×</Text> {multiplier}
                             </Text>
 
                             <View style={styles.divider} />
@@ -171,7 +176,7 @@ const DodgingTableQuizScreen: React.FC<Props> = ({ route, navigation }) => {
                                         size={28}
                                         color={isCorrect ? "#4CAF50" : "#F44336"}
                                     />
-                                    <Text style={[styles.feedbackText, { color: isCorrect ? "#2E7D32" : "#D32F2F" }]}>
+                                    <Text style={[styles.feedbackText, { color: isCorrect ? c.primary : c.danger }]}>
                                         {isCorrect ? "Correct!" : `Oops! It's ${tableNum * multiplier}`}
                                     </Text>
                                 </View>
@@ -193,7 +198,7 @@ const DodgingTableQuizScreen: React.FC<Props> = ({ route, navigation }) => {
                             </View>
                             <View style={styles.scoreDivider} />
                             <View style={styles.scoreItem}>
-                                <Text style={[styles.scoreValue, { color: "#D32F2F" }]}>{wrong}</Text>
+                                <Text style={[styles.scoreValue, { color: c.danger }]}>{wrong}</Text>
                                 <Text style={styles.scoreLabel}>Wrong</Text>
                             </View>
                         </View>
@@ -213,19 +218,19 @@ const DodgingTableQuizScreen: React.FC<Props> = ({ route, navigation }) => {
 
             {!quizOver && (
                 <View style={styles.miniScoreboard}>
-                    <Text style={[styles.miniScoreText, { color: "#2E7D32" }]}>Correct: {correct}</Text>
+                    <Text style={[styles.miniScoreText, { color: c.primary }]}>Correct: {correct}</Text>
                     <View style={styles.miniDivider} />
-                    <Text style={[styles.miniScoreText, { color: "#D32F2F" }]}>Wrong: {wrong}</Text>
+                    <Text style={[styles.miniScoreText, { color: c.danger }]}>Wrong: {wrong}</Text>
                 </View>
             )}
         </View>
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (c: ThemeColors) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#F8F9FA",
+        backgroundColor: c.background,
     },
     header: {
         height: 100,
@@ -243,51 +248,51 @@ const styles = StyleSheet.create({
     timerBadge: {
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: "#FFF",
+        backgroundColor: c.surface,
         paddingHorizontal: 12,
         paddingVertical: 6,
         borderRadius: 15,
         borderWidth: 1,
-        borderColor: "#EEE",
+        borderColor: c.border,
     },
     timerText: {
         fontSize: 16,
         fontWeight: "700",
-        color: "#333",
+        color: c.text,
         marginLeft: 6,
     },
     exitButton: {
         paddingVertical: 8,
         paddingHorizontal: 16,
-        backgroundColor: BASE_COLOR + "15",
+        backgroundColor: c.button + "15",
         borderRadius: 20,
     },
     exitButtonText: {
-        color: BASE_COLOR,
+        color: c.primary,
         fontSize: 14,
         fontWeight: "800",
     },
     progressContainer: {
         width: "100%",
         height: 6,
-        backgroundColor: "#E0E0E0",
+        backgroundColor: c.border,
         borderRadius: 3,
         overflow: "hidden",
         marginBottom: 10,
     },
     progressBar: {
         height: "100%",
-        backgroundColor: BASE_COLOR,
+        backgroundColor: c.button,
     },
     countText: {
         fontSize: 14,
         fontWeight: "600",
-        color: "#888",
+        color: c.textMuted,
         textAlign: 'center',
         marginBottom: 20,
     },
     questionCard: {
-        backgroundColor: "#FFF",
+        backgroundColor: c.surface,
         borderRadius: 25,
         padding: 24,
         alignItems: "center",
@@ -300,20 +305,20 @@ const styles = StyleSheet.create({
     questionText: {
         fontSize: 48,
         fontWeight: "900",
-        color: "#1A1A1A",
+        color: c.text,
         marginVertical: 20,
     },
     divider: {
         width: "100%",
         height: 1,
-        backgroundColor: "#EEE",
+        backgroundColor: c.border,
         marginVertical: 20,
     },
     inputLabel: {
         alignSelf: "flex-start",
         fontSize: 14,
         fontWeight: "700",
-        color: "#666",
+        color: c.textMuted,
         textTransform: "uppercase",
         marginBottom: 10,
         marginLeft: 4,
@@ -338,13 +343,13 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 24,
         fontWeight: "800",
-        color: "#1A1A1A",
+        color: c.text,
         marginBottom: 20,
         textAlign: "center",
     },
     finalScoreBoard: {
         flexDirection: "row",
-        backgroundColor: "#F8F9FA",
+        backgroundColor: c.background,
         borderRadius: 20,
         padding: 20,
         width: "100%",
@@ -357,18 +362,18 @@ const styles = StyleSheet.create({
     scoreValue: {
         fontSize: 28,
         fontWeight: "900",
-        color: "#2E7D32",
+        color: c.primary,
     },
     scoreLabel: {
         fontSize: 12,
         fontWeight: "700",
-        color: "#888",
+        color: c.textMuted,
         textTransform: "uppercase",
     },
     scoreDivider: {
         width: 1,
         height: 40,
-        backgroundColor: "#DDD",
+        backgroundColor: c.border,
     },
     secondaryButton: {
         marginTop: 15,
@@ -376,10 +381,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderRadius: 12,
         borderWidth: 2,
-        borderColor: "#EEE",
+        borderColor: c.border,
     },
     secondaryButtonText: {
-        color: "#666",
+        color: c.textMuted,
         fontSize: 16,
         fontWeight: "700",
     },
@@ -388,7 +393,7 @@ const styles = StyleSheet.create({
         bottom: 40,
         alignSelf: "center",
         flexDirection: "row",
-        backgroundColor: "#FFF",
+        backgroundColor: c.surface,
         paddingHorizontal: 20,
         paddingVertical: 10,
         borderRadius: 25,
@@ -402,12 +407,12 @@ const styles = StyleSheet.create({
     miniScoreText: {
         fontSize: 14,
         fontWeight: "700",
-        color: "#444",
+        color: c.text,
     },
     miniDivider: {
         width: 1,
         height: 15,
-        backgroundColor: "#EEE",
+        backgroundColor: c.border,
         marginHorizontal: 15,
     },
 });

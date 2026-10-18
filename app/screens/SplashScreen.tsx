@@ -1,10 +1,14 @@
+import { useTheme } from "@/context/ThemeContext";
+import type { ThemeColors } from "@/colors/Colors";
 import React, { useEffect, useRef } from "react";
-import { View, ActivityIndicator, StyleSheet, Animated } from "react-native";
+import { View, Text, ActivityIndicator, StyleSheet, Animated } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BASE_COLOR } from "@/colors/Colors";
 import { CommonActions } from "@react-navigation/native";
 
 export default function SplashScreen({ navigation }: any) {
+  const { colors: c } = useTheme();
+  const styles = React.useMemo(() => createStyles(c), [c]);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.5)).current;
 
@@ -49,25 +53,57 @@ export default function SplashScreen({ navigation }: any) {
 
   return (
     <View style={styles.container}>
-      <Animated.Image
-        source={require("../../assets/img/Sprouting_Minds_Abacus_(1).png")}
-        style={[styles.image, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}
-      />
-      <ActivityIndicator size="large" color={BASE_COLOR} />
+      <Animated.View style={[styles.logoTile, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}>
+        <Animated.Image
+          source={require("../../assets/img/Sprouting_Minds_Abacus_(1).png")}
+          style={styles.image}
+        />
+      </Animated.View>
+      <Animated.Text style={[styles.brand, { opacity: fadeAnim }]}>Abacus</Animated.Text>
+      <Animated.Text style={[styles.tagline, { opacity: fadeAnim }]}>Sharpen your mental math</Animated.Text>
+      <ActivityIndicator size="small" color="#fff" style={styles.loader} />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff",
+    backgroundColor: c.header,
   },
-  image: {
+  logoTile: {
     width: 150,
     height: 150,
-    marginBottom: 20,
+    borderRadius: 40,
+    backgroundColor: c.surface,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 12,
+  },
+  image: {
+    width: 120,
+    height: 120,
+    resizeMode: "contain",
+  },
+  brand: {
+    marginTop: 28,
+    fontSize: 34,
+    fontWeight: "800",
+    letterSpacing: 1,
+    color: "#fff",
+  },
+  tagline: {
+    marginTop: 6,
+    fontSize: 15,
+    color: "rgba(255,255,255,0.78)",
+  },
+  loader: {
+    marginTop: 40,
   },
 });

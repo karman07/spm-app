@@ -1,17 +1,32 @@
-import { BASE_COLOR } from "@/colors/Colors";
-import React, { useState, useRef } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { useTheme } from "@/context/ThemeContext";
+import type { ThemeColors } from "@/colors/Colors";
+import React, { useState, useRef, useEffect } from "react";
+import { View, Text, StyleSheet } from "react-native";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import Button from "../../components/Button";
+import { BASE_COLOR, colors, radius, shadow } from "@/colors/Colors";
+
+const pad = (n: number) => String(n).padStart(2, "0");
 
 const formatTime = (time: number) => {
-  const minutes = Math.floor(time / 60);
+  const hours = Math.floor(time / 3600);
+  const minutes = Math.floor((time % 3600) / 60);
   const seconds = time % 60;
-  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  return hours > 0 ? `${pad(hours)}:${pad(minutes)}:${pad(seconds)}` : `${pad(minutes)}:${pad(seconds)}`;
 };
 
 const Stopwatch: React.FC = () => {
+  const { colors: c } = useTheme();
+  const styles = React.useMemo(() => createStyles(c), [c]);
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
 
   const startTimer = () => {
     if (intervalRef.current) return;
@@ -36,57 +51,94 @@ const Stopwatch: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.timer}>{formatTime(time)}</Text>
-      <View style={styles.buttonContainer}>
+      <View style={styles.card}>
+        <View style={[styles.statusPill, isRunning && styles.statusPillActive]}>
+          <View style={[styles.statusDot, isRunning && styles.statusDotActive]} />
+          <Text style={[styles.statusText, isRunning && styles.statusTextActive]}>
+            {isRunning ? "Running" : time > 0 ? "Paused" : "Ready"}
+          </Text>
+        </View>
+
+        <Text style={styles.timer} adjustsFontSizeToFit numberOfLines={1}>
+          {formatTime(time)}
+        </Text>
+        <Text style={styles.caption}>{time >= 3600 ? "hours : minutes : seconds" : "minutes : seconds"}</Text>
+      </View>
+
+      <View style={styles.actions}>
         {!isRunning ? (
-          <TouchableOpacity style={styles.button} onPress={startTimer}>
-            <Text style={styles.buttonText}>Start</Text>
-          </TouchableOpacity>
+          <Button title={time > 0 ? "Resume" : "Start"} icon="play" onPress={startTimer} />
         ) : (
-          <TouchableOpacity style={styles.button} onPress={pauseTimer}>
-            <Text style={styles.buttonText}>Pause </Text>
-          </TouchableOpacity>
+          <Button title="Pause" icon="pause" onPress={pauseTimer} />
         )}
-        <TouchableOpacity style={[styles.button, styles.resetButton]} onPress={resetTimer}>
-          <Text style={styles.buttonText}>Reset</Text>
-        </TouchableOpacity>
+        <Button title="Reset" icon="restart" variant="outline" onPress={resetTimer} disabled={time === 0 && !isRunning} />
       </View>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (c: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffffff", // white background
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: c.background,
     padding: 20,
+    justifyContent: "center",
+  },
+  card: {
+    backgroundColor: c.surface,
+    borderRadius: radius.xl,
+    paddingVertical: 44,
+    paddingHorizontal: 20,
+    alignItems: "center",
+    ...shadow.card,
+  },
+  statusPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: c.background,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginBottom: 24,
+  },
+  statusPillActive: {
+    backgroundColor: c.primarySoft,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: c.textMuted,
+    marginRight: 8,
+  },
+  statusDotActive: {
+    backgroundColor: c.button,
+  },
+  statusText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: c.textMuted,
+  },
+  statusTextActive: {
+    color: c.primary,
   },
   timer: {
-    fontSize: 72,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 40,
+    width: "100%",
+    textAlign: "center",
+    fontSize: 80,
+    fontWeight: "800",
+    color: c.text,
+    fontVariant: ["tabular-nums"],
   },
-  buttonContainer: {
-    flexDirection: "row",
-    gap: 20,
+  caption: {
+    marginTop: 8,
+    fontSize: 12,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    color: c.textMuted,
   },
-  button: {
-    backgroundColor: BASE_COLOR,
-    paddingVertical: 14,
-    paddingHorizontal: 28,
-    borderRadius: 10,
-    marginHorizontal: 10,
-  },
-  resetButton: {
-    backgroundColor: BASE_COLOR,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
+  actions: {
+    marginTop: 28,
   },
 });
 

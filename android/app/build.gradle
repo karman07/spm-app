@@ -92,7 +92,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 3
-        versionName "2.1.0"
+        versionName "2.2.1"
     }
     signingConfigs {
         debug {
@@ -175,4 +175,3 @@ dependencies {
     }
 }
 
-apply plugin: 'com.google.gms.google-services'

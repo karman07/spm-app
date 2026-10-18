@@ -1,3 +1,5 @@
+import { useTheme } from "@/context/ThemeContext";
+import type { ThemeColors } from "@/colors/Colors";
 import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { BASE_COLOR } from '@/colors/Colors';
@@ -9,6 +11,8 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 type Props = NativeStackScreenProps<RootStackParamList, 'Result'>;
 
 export default function Result({ navigation, route }: Props) {
+  const { colors: c } = useTheme();
+  const styles = React.useMemo(() => createStyles(c), [c]);
   const { correct, wrong, total } = route.params;
 
   return (
@@ -16,7 +20,7 @@ export default function Result({ navigation, route }: Props) {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.card}>
           <View style={styles.iconCircle}>
-            <Icon name="trophy-outline" size={40} color={BASE_COLOR} />
+            <Icon name="trophy-outline" size={40} color={c.primary} />
           </View>
 
           <Text style={styles.sectionTitle}>Quiz Results</Text>
@@ -31,7 +35,7 @@ export default function Result({ navigation, route }: Props) {
             </View>
             <View style={styles.scoreDivider} />
             <View style={styles.scoreItem}>
-              <Text style={[styles.scoreValue, { color: "#D32F2F" }]}>{wrong}</Text>
+              <Text style={[styles.scoreValue, { color: c.danger }]}>{wrong}</Text>
               <Text style={styles.scoreLabel}>Missed</Text>
             </View>
           </View>
@@ -58,10 +62,10 @@ export default function Result({ navigation, route }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8F9FA",
+    backgroundColor: c.background,
   },
   scrollContent: {
     padding: 20,
@@ -69,7 +73,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   card: {
-    backgroundColor: "#FFF",
+    backgroundColor: c.surface,
     borderRadius: 25,
     padding: 30,
     alignItems: 'center',
@@ -83,7 +87,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: BASE_COLOR + '10',
+    backgroundColor: c.button + '10',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
@@ -91,20 +95,20 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 24,
     fontWeight: "800",
-    color: "#1A1A1A",
+    color: c.text,
     marginBottom: 12,
     textAlign: "center",
   },
   subtitle: {
     fontSize: 15,
-    color: '#666',
+    color: c.textMuted,
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 30,
   },
   finalScoreBoard: {
     flexDirection: "row",
-    backgroundColor: "#F8F9FA",
+    backgroundColor: c.background,
     borderRadius: 20,
     padding: 20,
     width: "100%",
@@ -117,30 +121,30 @@ const styles = StyleSheet.create({
   scoreValue: {
     fontSize: 32,
     fontWeight: "900",
-    color: "#2E7D32",
+    color: c.primary,
   },
   scoreLabel: {
     fontSize: 12,
     fontWeight: "700",
-    color: "#888",
+    color: c.textMuted,
     textTransform: "uppercase",
   },
   scoreDivider: {
     width: 1,
     height: 40,
-    backgroundColor: "#DDD",
+    backgroundColor: c.border,
   },
   accuracyContainer: {
     marginTop: 20,
     paddingHorizontal: 15,
     paddingVertical: 6,
-    backgroundColor: BASE_COLOR + '10',
+    backgroundColor: c.button + '10',
     borderRadius: 15,
   },
   accuracyText: {
     fontSize: 14,
     fontWeight: '800',
-    color: BASE_COLOR,
+    color: c.primary,
     textTransform: 'uppercase',
   },
   buttonWrapper: {
@@ -153,10 +157,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: "#EEE",
+    borderColor: c.border,
   },
   secondaryButtonText: {
-    color: "#666",
+    color: c.textMuted,
     fontSize: 16,
     fontWeight: "700",
   },

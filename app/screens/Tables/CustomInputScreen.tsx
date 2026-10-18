@@ -1,5 +1,9 @@
+import { useTheme } from "@/context/ThemeContext";
+import type { ThemeColors } from "@/colors/Colors";
+import SelectInput, { numberOptions } from "../../components/SelectInput";
+import { checkFields, validateInteger } from "@/utils/validation";
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from './TableNavigator';
@@ -10,16 +14,15 @@ import Button from "../../components/Button";
 type CustomInputNavigationProp = NativeStackNavigationProp<RootStackParamList, 'CustomInput'>;
 
 export default function CustomInputScreen() {
+  const { colors: c } = useTheme();
+  const styles = React.useMemo(() => createStyles(c), [c]);
   const [input, setInput] = useState('');
   const navigation = useNavigation<CustomInputNavigationProp>();
 
   const handleGenerate = () => {
-    const num = parseInt(input);
-    if (!isNaN(num) && num > 0) {
-      navigation.navigate('TableDisplay', { number: num });
-    } else {
-      Alert.alert('Invalid Input', 'Please enter a valid positive number (e.g., 25).');
-    }
+    const num = parseInt(input, 10);
+    if (!checkFields([validateInteger("Table number", input, 1, 100000)])) return;
+    navigation.navigate('TableDisplay', { number: num });
   };
 
   return (
@@ -30,17 +33,17 @@ export default function CustomInputScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Custom Table</Text>
-          <Text style={styles.subtitle}>Enter any number to generate its multiplication table up to infinity</Text>
+          <Text style={styles.subtitle}>Pick or type a number to generate its multiplication table up to 1000</Text>
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Table Number</Text>
-            <Input
-              placeholder="e.g. 29"
-              keyboardType="numeric"
-              value={input}
-              onChangeText={setInput}
-              autoFocus={true}
-            />
+            <SelectInput
+  placeholder="e.g. 29"
+  value={input}
+  onChange={setInput}
+  options={numberOptions(1, 1000)}
+  allowCustom={{ min: 1, max: 100000 }}
+/>
           </View>
 
           <View style={styles.buttonWrapper}>
@@ -52,10 +55,10 @@ export default function CustomInputScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8F9FA",
+    backgroundColor: c.background,
   },
   scrollContent: {
     flexGrow: 1,
@@ -63,7 +66,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   card: {
-    backgroundColor: "#FFF",
+    backgroundColor: c.surface,
     borderRadius: 25,
     padding: 24,
     shadowColor: "#000",
@@ -75,13 +78,13 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 22,
     fontWeight: "800",
-    color: "#1A1A1A",
+    color: c.text,
     marginBottom: 8,
     textAlign: "center",
   },
   subtitle: {
     fontSize: 14,
-    color: '#666',
+    color: c.textMuted,
     textAlign: 'center',
     marginBottom: 30,
     paddingHorizontal: 10,
@@ -92,7 +95,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 12,
     fontWeight: "700",
-    color: "#888",
+    color: c.textMuted,
     textTransform: "uppercase",
     marginBottom: 8,
     marginLeft: 4,

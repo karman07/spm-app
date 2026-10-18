@@ -1,3 +1,6 @@
+import { useTheme } from "@/context/ThemeContext";
+import type { ThemeColors } from "@/colors/Colors";
+import { parseSeconds } from "@/utils/time";
 import React, { useState, useEffect, useRef } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Animated } from "react-native";
 import { StackScreenProps } from "@react-navigation/stack";
@@ -8,11 +11,13 @@ import { BASE_COLOR } from "@/colors/Colors";
 type Props = StackScreenProps<AddStackParamList, "NumberDisplay">;
 
 const NumberDisplayScreen: React.FC<Props> = ({ navigation, route }) => {
+  const { colors: c } = useTheme();
+  const styles = React.useMemo(() => createStyles(c), [c]);
   const { digit, rows, time, speak, changeColor } = route.params;
   const [currentNumber, setCurrentNumber] = useState("");
   const [sum, setSum] = useState(0);
   const [count, setCount] = useState(0);
-  const [textColor, setTextColor] = useState("#333");
+  const [textColor, setTextColor] = useState("");
   const progressAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -36,7 +41,7 @@ const NumberDisplayScreen: React.FC<Props> = ({ navigation, route }) => {
       interval = setInterval(() => {
         generateAndDisplayNumber();
         setCount((prev) => prev + 1);
-      }, parseFloat(time) * 1000);
+      }, parseSeconds(time) * 1000);
     } else {
       setTimeout(() => {
         navigation.navigate("Answer", { sum, digit, rows, time, speak, changeColor });
@@ -72,8 +77,8 @@ const NumberDisplayScreen: React.FC<Props> = ({ navigation, route }) => {
   };
 
   const getRandomColor = () => {
-    const colors = ["#FF5733", "#33FF57", "#3357FF", "#FF33A1", "#FFC300", "#900C3F"];
-    return colors[Math.floor(Math.random() * colors.length)];
+    const palette = ["#FF5733", "#33FF57", "#3357FF", "#FF33A1", "#FFC300", "#D81B60"];
+    return palette[Math.floor(Math.random() * palette.length)];
   };
 
   const width = progressAnim.interpolate({
@@ -101,17 +106,17 @@ const NumberDisplayScreen: React.FC<Props> = ({ navigation, route }) => {
         <Text style={styles.countText}>Number {count} of {rows}</Text>
 
         <View style={styles.numberWrapper}>
-          <Text style={[styles.number, { color: textColor }]}>{currentNumber}</Text>
+          <Text style={[styles.number, { color: textColor || c.text }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.4}>{currentNumber}</Text>
         </View>
       </View>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (c: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8F9FA",
+    backgroundColor: c.background,
   },
   header: {
     height: 100,
@@ -129,23 +134,23 @@ const styles = StyleSheet.create({
   progressContainer: {
     width: "80%",
     height: 10,
-    backgroundColor: "#E0E0E0",
+    backgroundColor: c.border,
     borderRadius: 5,
     overflow: "hidden",
     marginBottom: 20,
   },
   progressBar: {
     height: "100%",
-    backgroundColor: BASE_COLOR,
+    backgroundColor: c.button,
   },
   countText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#888",
+    color: c.textMuted,
     marginBottom: 40,
   },
   numberWrapper: {
-    backgroundColor: "#FFF",
+    backgroundColor: c.surface,
     width: 250,
     height: 250,
     borderRadius: 125,
@@ -165,13 +170,13 @@ const styles = StyleSheet.create({
   backButton: {
     paddingVertical: 8,
     paddingHorizontal: 16,
-    backgroundColor: BASE_COLOR + "15", // Light version of base color
+    backgroundColor: c.button + "15", // Light version of base color
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: BASE_COLOR + "30",
+    borderColor: c.primary + "30",
   },
   backButtonText: {
-    color: BASE_COLOR,
+    color: c.primary,
     fontSize: 14,
     fontWeight: "800",
     textTransform: "uppercase",

@@ -1,3 +1,5 @@
+import { useTheme } from "@/context/ThemeContext";
+import type { ThemeColors } from "@/colors/Colors";
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
@@ -8,7 +10,13 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 type TableScreenRouteProp = RouteProp<RootStackParamList, 'TableDisplay'>;
 
+// Tables stop at x1000 so products stay far below the safe integer limit.
+const MAX_FACTOR = 1000;
+const MAX_START_INDEX = MAX_FACTOR / 10 - 1;
+
 export default function TableDisplayScreen() {
+  const { colors: c } = useTheme();
+  const styles = React.useMemo(() => createStyles(c), [c]);
   const route = useRoute<TableScreenRouteProp>();
   const navigation = useNavigation();
   const [number, setNumber] = useState(route.params?.number || 1);
@@ -29,7 +37,7 @@ export default function TableDisplayScreen() {
   };
 
   const handleForward = () => {
-    setStartIndex(prev => prev + 1);
+    setStartIndex(prev => Math.min(prev + 1, MAX_START_INDEX));
   };
 
   const handleBackward = () => {
@@ -43,7 +51,7 @@ export default function TableDisplayScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Icon name="arrow-left" size={24} color="#333" />
+          <Icon name="arrow-left" size={24} color={c.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Table of {number}</Text>
         <View style={{ width: 40 }} />
@@ -76,7 +84,7 @@ export default function TableDisplayScreen() {
           onPress={handleBackward}
           disabled={startIndex === 0}
         >
-          <Icon name="chevron-left" size={30} color={startIndex === 0 ? "#CCC" : BASE_COLOR} />
+          <Icon name="chevron-left" size={30} color={startIndex === 0 ? c.border : c.primary} />
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.speakButton} onPress={speakTable}>
@@ -84,18 +92,18 @@ export default function TableDisplayScreen() {
           <Text style={styles.speakText}>Listen</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.controlButton} onPress={handleForward}>
-          <Icon name="chevron-right" size={30} color={BASE_COLOR} />
+        <TouchableOpacity style={[styles.controlButton, startIndex >= MAX_START_INDEX && styles.disabledBtn]} onPress={handleForward} disabled={startIndex >= MAX_START_INDEX}>
+          <Icon name="chevron-right" size={30} color={c.primary} />
         </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: c.background,
   },
   header: {
     paddingHorizontal: 20,
@@ -103,26 +111,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#FFF',
+    backgroundColor: c.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#EEE',
+    borderBottomColor: c.border,
   },
   backButton: {
     padding: 8,
     borderRadius: 12,
-    backgroundColor: '#F1F3F5',
+    backgroundColor: c.background,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#1A1A1A',
+    color: c.text,
   },
   tableScroll: {
     padding: 20,
     paddingBottom: 100,
   },
   card: {
-    backgroundColor: '#FFF',
+    backgroundColor: c.surface,
     borderRadius: 25,
     paddingVertical: 10,
     shadowColor: '#000',
@@ -138,7 +146,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 25,
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F3F5',
+    borderBottomColor: c.border,
   },
   formula: {
     flexDirection: 'row',
@@ -148,32 +156,32 @@ const styles = StyleSheet.create({
   numText: {
     fontSize: 22,
     fontWeight: '800',
-    color: BASE_COLOR,
+    color: c.primary,
     width: 40,
     textAlign: 'center',
   },
   opText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#999',
+    color: c.textMuted,
     marginHorizontal: 10,
   },
   multText: {
     fontSize: 22,
     fontWeight: '600',
-    color: '#333',
+    color: c.text,
     width: 40,
     textAlign: 'center',
   },
   equalText: {
     fontSize: 20,
-    color: '#999',
+    color: c.textMuted,
     marginHorizontal: 15,
   },
   resultText: {
     fontSize: 24,
     fontWeight: '900',
-    color: '#1A1A1A',
+    color: c.text,
     width: 70,
     textAlign: 'right',
   },
@@ -182,7 +190,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   infoText: {
-    color: '#888',
+    color: c.textMuted,
     fontSize: 12,
     textTransform: 'uppercase',
     letterSpacing: 1,
@@ -193,11 +201,11 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     flexDirection: 'row',
-    backgroundColor: '#FFF',
+    backgroundColor: c.surface,
     paddingHorizontal: 20,
     paddingVertical: 15,
     borderTopWidth: 1,
-    borderTopColor: '#EEE',
+    borderTopColor: c.border,
     alignItems: 'center',
     justifyContent: 'space-between',
   },
@@ -205,7 +213,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#F1F3F5',
+    backgroundColor: c.background,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -215,11 +223,11 @@ const styles = StyleSheet.create({
   speakButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: BASE_COLOR,
+    backgroundColor: c.button,
     paddingVertical: 12,
     paddingHorizontal: 25,
     borderRadius: 25,
-    shadowColor: BASE_COLOR,
+    shadowColor: c.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,

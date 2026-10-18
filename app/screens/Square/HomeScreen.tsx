@@ -1,3 +1,8 @@
+import { useTheme } from "@/context/ThemeContext";
+import type { ThemeColors } from "@/colors/Colors";
+import SelectInput, { numberOptions } from "../../components/SelectInput";
+import { checkFields, validateInteger, validateSecondsField, MAX_QUESTIONS, MAX_QUIZ_SECONDS, MAX_INTERVAL_SECONDS, MIN_SECONDS } from "@/utils/validation";
+import { parseSeconds, QUIZ_TICK_SECONDS } from "@/utils/time";
 import React, { useState } from 'react';
 import {
   View,
@@ -17,24 +22,28 @@ import Button from "../../components/Button";
 type Props = StackScreenProps<RootStackParamList, 'Home'>;
 
 const HomeScreen: React.FC<Props> = ({ navigation, route }) => {
+  const { colors: c } = useTheme();
+  const styles = React.useMemo(() => createStyles(c), [c]);
   const { mode } = route.params;
   const [digit, setDigit] = useState('');
   const [time, setTime] = useState('');
   const [questions, setQuestions] = useState('');
   const scaleAnim = new Animated.Value(1);
 
+  // Square: 7 digits (7-digit root squared < 9e15). Cube: 5 digits (cube must stay below Number.MAX_SAFE_INTEGER).
+  const maxDigits = mode === 'square' ? 7 : 5;
+
   const startQuiz = () => {
     const digitNum = parseInt(digit);
-    const timeNum = parseInt(time);
+    const timeNum = parseSeconds(time, QUIZ_TICK_SECONDS);
     const questionsNum = parseInt(questions);
 
     if (
-      !digit ||
-      !time ||
-      !questions ||
-      isNaN(digitNum) ||
-      isNaN(timeNum) ||
-      isNaN(questionsNum)
+      !checkFields([
+        validateInteger("Root digits", digit, 1, maxDigits),
+        validateInteger("Number of questions", questions, 1, MAX_QUESTIONS),
+        validateSecondsField("Time per question", time, MIN_SECONDS, MAX_QUIZ_SECONDS, 1),
+      ])
     ) {
       return;
     }
@@ -72,23 +81,24 @@ const HomeScreen: React.FC<Props> = ({ navigation, route }) => {
           <Text style={styles.sectionTitle}>{title}</Text>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Root Digits (1-3)</Text>
-            <Input
-              placeholder="e.g. 2"
-              value={digit}
-              onChangeText={setDigit}
-              keyboardType="numeric"
-            />
+            <Text style={styles.label}>Root Digits (1-{maxDigits})</Text>
+            <SelectInput
+  placeholder="e.g. 2"
+  value={digit}
+  onChange={setDigit}
+  options={numberOptions(1, maxDigits)}
+/>
           </View>
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Number of Questions</Text>
-            <Input
-              placeholder="e.g. 10"
-              value={questions}
-              onChangeText={setQuestions}
-              keyboardType="numeric"
-            />
+            <SelectInput
+  placeholder="e.g. 10"
+  value={questions}
+  onChange={setQuestions}
+  options={numberOptions(1, 100)}
+  allowCustom={{ min: 1, max: 100000 }}
+/>
           </View>
 
           <View style={styles.inputGroup}>
@@ -97,7 +107,7 @@ const HomeScreen: React.FC<Props> = ({ navigation, route }) => {
               placeholder="e.g. 5"
               value={time}
               onChangeText={setTime}
-              keyboardType="numeric"
+              keyboardType="decimal-pad"
             />
           </View>
         </View>
@@ -115,10 +125,10 @@ const HomeScreen: React.FC<Props> = ({ navigation, route }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (c: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8F9FA",
+    backgroundColor: c.background,
   },
   scrollContainer: {
     flexGrow: 1,
@@ -126,7 +136,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   card: {
-    backgroundColor: "#FFF",
+    backgroundColor: c.surface,
     borderRadius: 20,
     padding: 20,
     shadowColor: "#000",
@@ -139,7 +149,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: "800",
-    color: "#1A1A1A",
+    color: c.text,
     marginBottom: 25,
     textAlign: "center",
   },
@@ -149,7 +159,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 12,
     fontWeight: "700",
-    color: "#888",
+    color: c.textMuted,
     textTransform: "uppercase",
     marginBottom: 8,
     marginLeft: 4,

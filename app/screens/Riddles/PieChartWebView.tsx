@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
 import { WebView } from 'react-native-webview';
+import { useTheme } from '@/context/ThemeContext';
 
 interface Props {
   correct: number;
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export default function PieChartWebView({ correct, wrong }: Props) {
+  const { colors: c } = useTheme();
   const html = `
     <html>
       <head>
@@ -31,7 +33,7 @@ export default function PieChartWebView({ correct, wrong }: Props) {
               plugins: {
                 legend: {
                   labels: {
-                    color: '#000',
+                    color: '${c.text}',
                     font: {
                       size: 20
                     }
@@ -50,7 +52,8 @@ export default function PieChartWebView({ correct, wrong }: Props) {
       <WebView
         originWhitelist={['*']}
         source={{ html }}
-        style={{ flex: 1 }}
+        style={{ flex: 1, backgroundColor: 'transparent' }}
+        containerStyle={{ backgroundColor: 'transparent' }}
         javaScriptEnabled
         domStorageEnabled
         automaticallyAdjustContentInsets={false}

@@ -1,3 +1,5 @@
+import { useTheme } from "@/context/ThemeContext";
+import type { ThemeColors } from "@/colors/Colors";
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, ScrollView, Animated } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -9,6 +11,8 @@ import Button from '../../components/Button';
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
 export default function HomeScreen() {
+  const { colors: c } = useTheme();
+  const styles = React.useMemo(() => createStyles(c), [c]);
   const navigation = useNavigation<HomeScreenNavigationProp>();
 
   const handlePress = (num: number) => {
@@ -64,17 +68,17 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: c.background,
   },
   scrollContent: {
     padding: 20,
     paddingBottom: 40,
   },
   card: {
-    backgroundColor: '#FFF',
+    backgroundColor: c.surface,
     borderRadius: 20,
     padding: 20,
     shadowColor: '#000',
@@ -85,7 +89,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   quizCard: {
-    backgroundColor: '#FFF',
+    backgroundColor: c.surface,
     borderRadius: 20,
     padding: 24,
     shadowColor: '#000',
@@ -98,13 +102,13 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 22,
     fontWeight: '800',
-    color: '#1A1A1A',
+    color: c.text,
     marginBottom: 8,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 14,
-    color: '#666',
+    color: c.textMuted,
     textAlign: 'center',
     marginBottom: 20,
     paddingHorizontal: 10,
@@ -112,7 +116,7 @@ const styles = StyleSheet.create({
   customInputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F1F3F5',
+    backgroundColor: c.background,
     padding: 12,
     borderRadius: 15,
     marginBottom: 20,
@@ -121,7 +125,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: BASE_COLOR,
+    backgroundColor: c.button,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 15,
@@ -134,7 +138,7 @@ const styles = StyleSheet.create({
   customInputText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#444',
+    color: c.text,
   },
   buttonGrid: {
     flexDirection: 'row',
@@ -148,19 +152,19 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FFF',
+    backgroundColor: c.surface,
     borderWidth: 2,
-    borderColor: '#E9ECEF',
+    borderColor: c.border,
   },
   numButtonText: {
-    color: BASE_COLOR,
+    color: c.primary,
     fontWeight: '800',
     fontSize: 18,
   },
   moreTablesText: {
     marginTop: 15,
     fontSize: 12,
-    color: '#888',
+    color: c.textMuted,
     textAlign: 'center',
     fontStyle: 'italic',
   },

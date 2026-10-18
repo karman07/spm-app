@@ -36,3 +36,14 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+
+# local secrets
+.env
+.env.local
+
+# Play Store / signing credentials
+play-store-api-access-*.json
+*service-account*.json
+*.p8
+*.keystore
+!android/app/debug.keystore

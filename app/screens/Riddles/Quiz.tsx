@@ -1,3 +1,5 @@
+import { useTheme } from "@/context/ThemeContext";
+import type { ThemeColors } from "@/colors/Colors";
 import React, { useEffect, useState, useRef } from 'react';
 import { View, StyleSheet, ActivityIndicator, TouchableOpacity, Animated, Dimensions, Platform, Text, ScrollView } from 'react-native';
 import { fetchRiddle } from '@/utils/api';
@@ -11,6 +13,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Quiz'>;
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function Quiz({ navigation, route }: Props) {
+  const { colors: c } = useTheme();
+  const styles = React.useMemo(() => createStyles(c), [c]);
   const { totalQuestions } = route.params;
   const [riddle, setRiddle] = useState<any>(null);
   const [selected, setSelected] = useState<string | null>(null);
@@ -103,7 +107,7 @@ export default function Quiz({ navigation, route }: Props) {
   if (error) {
     return (
       <View style={styles.loadingContainer}>
-        <Icon name="alert-circle-outline" size={50} color={BASE_COLOR} />
+        <Icon name="alert-circle-outline" size={50} color={c.primary} />
         <Text style={styles.errorText}>{error}</Text>
         <TouchableOpacity style={styles.retryButton} onPress={loadNew}>
           <Text style={styles.retryButtonText}>Try Again</Text>
@@ -118,7 +122,7 @@ export default function Quiz({ navigation, route }: Props) {
   if (loading && !riddle) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={BASE_COLOR} />
+        <ActivityIndicator size="large" color={c.primary} />
         <Text style={styles.loadingText}>Generating a riddle...</Text>
       </View>
     );
@@ -129,7 +133,7 @@ export default function Quiz({ navigation, route }: Props) {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.timerBadge}>
-          <Icon name="clock-outline" size={18} color="#333" />
+          <Icon name="clock-outline" size={18} color={c.text} />
           <Text style={styles.timerText}>{timeLeft}s</Text>
         </View>
         <TouchableOpacity
@@ -152,13 +156,13 @@ export default function Quiz({ navigation, route }: Props) {
 
         <View style={styles.questionCard}>
           <View style={styles.aiBadge}>
-            <Icon name="auto-fix" size={14} color={BASE_COLOR} />
+            <Icon name="auto-fix" size={14} color={c.primary} />
             <Text style={styles.aiBadgeText}>AI Generated</Text>
           </View>
 
           {loading ? (
             <View style={{ height: 200, justifyContent: 'center' }}>
-              <ActivityIndicator size="small" color={BASE_COLOR} />
+              <ActivityIndicator size="small" color={c.primary} />
             </View>
           ) : (
             <>
@@ -170,8 +174,8 @@ export default function Quiz({ navigation, route }: Props) {
                   const isSelected = selected === opt;
                   const isCorrectOpt = opt === riddle.answer;
 
-                  let bgColor = "#FFF";
-                  let borderColor = "#EEE";
+                  let bgColor = c.surface;
+                  let borderColor = c.border;
                   if (isSelected) {
                     bgColor = isCorrectOpt ? "#4CAF5015" : "#F4433615";
                     borderColor = isCorrectOpt ? "#4CAF50" : "#F44336";
@@ -209,7 +213,7 @@ export default function Quiz({ navigation, route }: Props) {
               {showAnswer && (
                 <View style={styles.explanationBox}>
                   <View style={styles.explanationHeader}>
-                    <Icon name="lightbulb-outline" size={20} color={BASE_COLOR} />
+                    <Icon name="lightbulb-outline" size={20} color={c.primary} />
                     <Text style={styles.explanationTitle}>Explanation</Text>
                   </View>
                   <Text style={styles.explanationText}>{riddle?.explanation}</Text>
@@ -228,28 +232,28 @@ export default function Quiz({ navigation, route }: Props) {
       </ScrollView>
 
       <View style={styles.miniScoreboard}>
-        <Text style={[styles.miniScoreText, { color: "#2E7D32" }]}>Correct: {correct}</Text>
+        <Text style={[styles.miniScoreText, { color: c.primary }]}>Correct: {correct}</Text>
         <View style={styles.miniDivider} />
-        <Text style={[styles.miniScoreText, { color: "#D32F2F" }]}>Wrong: {wrong}</Text>
+        <Text style={[styles.miniScoreText, { color: c.danger }]}>Wrong: {wrong}</Text>
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8F9FA",
+    backgroundColor: c.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8F9FA',
+    backgroundColor: c.background,
   },
   loadingText: {
     marginTop: 15,
-    color: '#666',
+    color: c.textMuted,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -272,51 +276,51 @@ const styles = StyleSheet.create({
   timerBadge: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFF",
+    backgroundColor: c.surface,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 15,
     borderWidth: 1,
-    borderColor: "#EEE",
+    borderColor: c.border,
   },
   timerText: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#333",
+    color: c.text,
     marginLeft: 6,
   },
   exitButton: {
     paddingVertical: 8,
     paddingHorizontal: 16,
-    backgroundColor: BASE_COLOR + "15",
+    backgroundColor: c.button + "15",
     borderRadius: 20,
   },
   exitButtonText: {
-    color: BASE_COLOR,
+    color: c.primary,
     fontSize: 14,
     fontWeight: "800",
   },
   progressContainer: {
     width: "100%",
     height: 6,
-    backgroundColor: "#E0E0E0",
+    backgroundColor: c.border,
     borderRadius: 3,
     overflow: "hidden",
     marginBottom: 8,
   },
   progressBar: {
     height: "100%",
-    backgroundColor: BASE_COLOR,
+    backgroundColor: c.button,
   },
   countText: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#888",
+    color: c.textMuted,
     textAlign: 'center',
     marginBottom: 15,
   },
   questionCard: {
-    backgroundColor: "#FFF",
+    backgroundColor: c.surface,
     borderRadius: 25,
     padding: 24,
     shadowColor: "#000",
@@ -328,7 +332,7 @@ const styles = StyleSheet.create({
   aiBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: BASE_COLOR + '10',
+    backgroundColor: c.button + '10',
     alignSelf: 'flex-start',
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -338,21 +342,21 @@ const styles = StyleSheet.create({
   aiBadgeText: {
     fontSize: 10,
     fontWeight: '800',
-    color: BASE_COLOR,
+    color: c.primary,
     textTransform: 'uppercase',
     marginLeft: 5,
   },
   questionText: {
     fontSize: 20,
     fontWeight: "700",
-    color: "#1A1A1A",
+    color: c.text,
     lineHeight: 28,
     marginBottom: 15,
   },
   divider: {
     width: "100%",
     height: 1,
-    backgroundColor: "#F1F3F5",
+    backgroundColor: c.background,
     marginVertical: 15,
   },
   optionsContainer: {
@@ -372,7 +376,7 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#444",
+    color: c.text,
     flex: 1,
   },
   miniScoreboard: {
@@ -380,7 +384,7 @@ const styles = StyleSheet.create({
     bottom: 40,
     alignSelf: "center",
     flexDirection: "row",
-    backgroundColor: "#FFF",
+    backgroundColor: c.surface,
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 25,
@@ -398,18 +402,18 @@ const styles = StyleSheet.create({
   miniDivider: {
     width: 1,
     height: 15,
-    backgroundColor: "#EEE",
+    backgroundColor: c.border,
     marginHorizontal: 15,
   },
   errorText: {
-    color: '#666',
+    color: c.textMuted,
     fontSize: 16,
     textAlign: 'center',
     marginVertical: 20,
     paddingHorizontal: 40,
   },
   retryButton: {
-    backgroundColor: BASE_COLOR,
+    backgroundColor: c.button,
     paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 12,
@@ -424,17 +428,17 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   backButtonMinorText: {
-    color: '#888',
+    color: c.textMuted,
     fontSize: 14,
     fontWeight: '600',
   },
   explanationBox: {
     marginTop: 20,
     padding: 20,
-    backgroundColor: BASE_COLOR + '08',
+    backgroundColor: c.button + '08',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: BASE_COLOR + '20',
+    borderColor: c.primary + '20',
   },
   explanationHeader: {
     flexDirection: 'row',
@@ -444,25 +448,25 @@ const styles = StyleSheet.create({
   explanationTitle: {
     fontSize: 14,
     fontWeight: '800',
-    color: BASE_COLOR,
+    color: c.primary,
     textTransform: 'uppercase',
     marginLeft: 10,
     letterSpacing: 1,
   },
   explanationText: {
     fontSize: 15,
-    color: '#444',
+    color: c.text,
     lineHeight: 22,
     marginBottom: 20,
   },
   nextBtn: {
-    backgroundColor: BASE_COLOR,
+    backgroundColor: c.button,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
     borderRadius: 15,
-    shadowColor: BASE_COLOR,
+    shadowColor: c.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,

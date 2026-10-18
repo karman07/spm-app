@@ -1,24 +1,31 @@
-import { BASE_COLOR } from "@/colors/Colors";
-import React, { useState, useRef } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-} from "react-native";
+import { useTheme } from "@/context/ThemeContext";
+import type { ThemeColors } from "@/colors/Colors";
+import React, { useState, useRef, useEffect } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import Button from "../../components/Button";
+import { BASE_COLOR, colors, radius, shadow } from "@/colors/Colors";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
 const CountdownTimer = () => {
+  const { colors: c } = useTheme();
+  const styles = React.useMemo(() => createStyles(c), [c]);
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
   const [seconds, setSeconds] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
+  const [totalTime, setTotalTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
 
   const increment = (type: "h" | "m" | "s") => {
     if (type === "h") setHours((prev) => (prev + 1) % 24);
@@ -40,10 +47,12 @@ const CountdownTimer = () => {
 
     if (!hasStarted) {
       setTimeLeft(total);
+      setTotalTime(total);
       setHasStarted(true);
     }
 
     setIsRunning(true);
+    if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
@@ -74,6 +83,7 @@ const CountdownTimer = () => {
     setMinutes(0);
     setSeconds(0);
     setTimeLeft(0);
+    setTotalTime(0);
     setIsRunning(false);
     setHasStarted(false);
   };
@@ -82,155 +92,146 @@ const CountdownTimer = () => {
   const displayHours = Math.floor(display / 3600);
   const displayMinutes = Math.floor((display % 3600) / 60);
   const displaySeconds = display % 60;
+  const progress = hasStarted && totalTime > 0 ? timeLeft / totalTime : 1;
+  const finished = hasStarted && timeLeft === 0;
+
+  const pickers: { label: string; type: "h" | "m" | "s"; value: number }[] = [
+    { label: "Hours", type: "h", value: hours },
+    { label: "Minutes", type: "m", value: minutes },
+    { label: "Seconds", type: "s", value: seconds },
+  ];
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+      <View style={styles.displayCard}>
+        <Text style={styles.displayLabel}>{finished ? "Time's up" : hasStarted ? (isRunning ? "Counting down" : "Paused") : "Set your time"}</Text>
+        <Text style={[styles.timerText, finished && styles.timerFinished]} adjustsFontSizeToFit numberOfLines={1}>
+          {pad(displayHours)}:{pad(displayMinutes)}:{pad(displaySeconds)}
+        </Text>
+        <View style={styles.track}>
+          <View style={[styles.fill, { width: `${Math.max(0, Math.min(1, progress)) * 100}%` }, finished && styles.fillFinished]} />
+        </View>
+      </View>
 
       {!hasStarted && (
         <View style={styles.pickerRow}>
-          {["Hours", "Minutes", "Seconds"].map((label, index) => (
-            <View style={styles.timePicker} key={label}>
-              <TouchableOpacity
-                onPress={() =>
-                  increment(index === 0 ? "h" : index === 1 ? "m" : "s")
-                }
-              >
-                <Text style={styles.arrow}>▲</Text>
+          {pickers.map((p) => (
+            <View style={styles.timePicker} key={p.label}>
+              <TouchableOpacity style={styles.arrowBtn} onPress={() => increment(p.type)}>
+                <Icon name="chevron-up" size={26} color={c.primary} />
               </TouchableOpacity>
-              <Text style={styles.time}>
-                {pad(index === 0 ? hours : index === 1 ? minutes : seconds)}
-              </Text>
-              <TouchableOpacity
-                onPress={() =>
-                  decrement(index === 0 ? "h" : index === 1 ? "m" : "s")
-                }
-              >
-                <Text style={styles.arrow}>▼</Text>
+              <Text style={styles.time}>{pad(p.value)}</Text>
+              <TouchableOpacity style={styles.arrowBtn} onPress={() => decrement(p.type)}>
+                <Icon name="chevron-down" size={26} color={c.primary} />
               </TouchableOpacity>
-              <Text style={styles.label}>{label}</Text>
+              <Text style={styles.label}>{p.label}</Text>
             </View>
           ))}
         </View>
       )}
 
-      <View style={styles.timerDisplay}>
-        <Text style={styles.timerText}>
-          {pad(displayHours)}:{pad(displayMinutes)}:{pad(displaySeconds)}
-        </Text>
+      <View style={styles.actions}>
+        {!hasStarted && <Button title="Start Countdown" icon="play" onPress={startCountdown} disabled={getTotalSeconds() === 0} />}
+
+        {hasStarted && (
+          <>
+            {!isRunning ? (
+              <Button title={finished ? "Finished" : "Resume"} icon="play" onPress={startCountdown} disabled={finished} />
+            ) : (
+              <Button title="Pause" icon="pause" onPress={pauseCountdown} />
+            )}
+            <Button title="Reset" icon="restart" variant="outline" onPress={resetCountdown} />
+          </>
+        )}
       </View>
-
-      {!hasStarted && (
-        <TouchableOpacity style={styles.startButton} onPress={startCountdown}>
-          <Text style={styles.startText}>Start Countdown</Text>
-        </TouchableOpacity>
-      )}
-
-      {hasStarted && (
-        <View style={styles.controls}>
-          {!isRunning ? (
-            <TouchableOpacity style={styles.startButton} onPress={startCountdown}>
-              <Text style={styles.startText}>Start</Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity style={styles.pauseButton} onPress={pauseCountdown}>
-              <Text style={styles.pauseText}>Pause</Text>
-            </TouchableOpacity>
-          )}
-          <TouchableOpacity style={styles.resetButton} onPress={resetCountdown}>
-            <Text style={styles.resetText}>Reset</Text>
-          </TouchableOpacity>
-        </View>
-      )}
     </ScrollView>
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (c: ThemeColors) => StyleSheet.create({
   container: {
-    backgroundColor: "#ffffff",
+    backgroundColor: c.background,
     flexGrow: 1,
-    alignItems: "center",
+    padding: 20,
     justifyContent: "center",
-    paddingVertical: 40,
   },
-  heading: {
-    fontSize: 26,
-    fontWeight: "bold",
-    color: "#2E7D32",
-    marginBottom: 20,
+  displayCard: {
+    backgroundColor: c.surface,
+    borderRadius: radius.xl,
+    paddingVertical: 32,
+    paddingHorizontal: 20,
+    alignItems: "center",
+    ...shadow.card,
+  },
+  displayLabel: {
+    fontSize: 13,
+    fontWeight: "700",
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    color: c.textMuted,
+    marginBottom: 12,
+  },
+  timerText: {
+    width: "100%",
+    textAlign: "center",
+    fontSize: 64,
+    fontWeight: "800",
+    color: c.text,
+    fontVariant: ["tabular-nums"],
+  },
+  timerFinished: {
+    color: c.danger,
+  },
+  track: {
+    width: "100%",
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: c.background,
+    marginTop: 22,
+    overflow: "hidden",
+  },
+  fill: {
+    height: "100%",
+    borderRadius: 4,
+    backgroundColor: c.button,
+  },
+  fillFinished: {
+    backgroundColor: c.danger,
   },
   pickerRow: {
     flexDirection: "row",
-    justifyContent: "center",
-    gap: 20,
-    marginBottom: 30,
+    justifyContent: "space-between",
+    marginTop: 20,
   },
   timePicker: {
+    flex: 1,
     alignItems: "center",
-    marginHorizontal: 10,
+    backgroundColor: c.surface,
+    borderRadius: radius.lg,
+    paddingVertical: 12,
+    marginHorizontal: 5,
+    ...shadow.soft,
   },
-  arrow: {
-    fontSize: 24,
-    color: BASE_COLOR,
+  arrowBtn: {
+    width: 44,
+    height: 36,
+    alignItems: "center",
+    justifyContent: "center",
   },
   time: {
-    fontSize: 36,
-    fontWeight: "bold",
-    color: BASE_COLOR,
+    fontSize: 34,
+    fontWeight: "800",
+    color: c.primary,
+    fontVariant: ["tabular-nums"],
   },
   label: {
-    marginTop: 6,
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#000",
+    marginTop: 4,
+    fontSize: 12,
+    fontWeight: "700",
+    color: c.textMuted,
   },
-  startButton: {
-    backgroundColor: BASE_COLOR,
-    paddingVertical: 14,
-    paddingHorizontal: 30,
-    borderRadius: 10,
-    marginTop: 20,
-  },
-  startText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  timerDisplay: {
-    marginTop: 10,
-    marginBottom: 10,
-  },
-  timerText: {
-    fontSize: 48,
-    fontWeight: "bold",
-    color: "#111",
-  },
-  pauseButton: {
-    backgroundColor: "#FBC02D",
-    padding: 14,
-    borderRadius: 10,
-    marginRight: 10,
-  },
-  pauseText: {
-    color: "#000",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  resetButton: {
-    backgroundColor: "#D32F2F",
-    padding: 14,
-    borderRadius: 10,
-    marginLeft: 10,
-  },
-  resetText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  controls: {
-    flexDirection: "row",
-    marginTop: 20,
-    gap: 20,
+  actions: {
+    marginTop: 24,
   },
 });
 

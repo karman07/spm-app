@@ -10,7 +10,6 @@
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		16EECA92EE7848EBB3393A7A /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1504AB515AA648DB8C6173F9 /* GoogleService-Info.plist */; };
 		242F08A470B64F61A35630F6 /* noop-file.swift in Sources */ = {isa = PBXBuildFile; fileRef = B30208E6E18E4BAFA030F5E1 /* noop-file.swift */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
 		8D59926106277D4709AB33FE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 0B5F98701A154F1E0CF8F254 /* PrivacyInfo.xcprivacy */; };
@@ -27,7 +26,6 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Abacus/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Abacus/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = Abacus/main.m; sourceTree = "<group>"; };
-		1504AB515AA648DB8C6173F9 /* GoogleService-Info.plist */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "Abacus/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		3B6D2D05C81041A097E76210 /* Abacus-Bridging-Header.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = "Abacus-Bridging-Header.h"; path = "Abacus/Abacus-Bridging-Header.h"; sourceTree = "<group>"; };
 		6C2E3173556A471DD304B334 /* Pods-Abacus.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Abacus.debug.xcconfig"; path = "Target Support Files/Pods-Abacus/Pods-Abacus.debug.xcconfig"; sourceTree = "<group>"; };
 		7A4D352CD337FB3A3BF06240 /* Pods-Abacus.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Abacus.release.xcconfig"; path = "Target Support Files/Pods-Abacus/Pods-Abacus.release.xcconfig"; sourceTree = "<group>"; };
@@ -64,7 +62,6 @@
 				B30208E6E18E4BAFA030F5E1 /* noop-file.swift */,
 				3B6D2D05C81041A097E76210 /* Abacus-Bridging-Header.h */,
 				0B5F98701A154F1E0CF8F254 /* PrivacyInfo.xcprivacy */,
-				1504AB515AA648DB8C6173F9 /* GoogleService-Info.plist */,
 			);
 			name = Abacus;
 			sourceTree = "<group>";
@@ -208,7 +205,6 @@
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
 				8D59926106277D4709AB33FE /* PrivacyInfo.xcprivacy in Resources */,
-				16EECA92EE7848EBB3393A7A /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -435,7 +431,7 @@
 				INFOPLIST_FILE = Abacus/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.2.1;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -463,7 +459,7 @@
 				INFOPLIST_FILE = Abacus/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.2.1;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
